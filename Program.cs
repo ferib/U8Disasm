@@ -30,8 +30,10 @@ namespace u8_disasm
                     break;
                 }
 
-                result += cmd.opcode.ToString("X4").PadRight(5);
-                result += cmd.instr.PadRight(10) + cmd.operands;
+                string bytestr = "";
+                for (int j = 0; j < ret; j += 2)
+                    bytestr += BitConverter.ToUInt16(buf, j).ToString("X4") + " ";
+                result += bytestr.PadRight(15) + cmd.instr.PadRight(10) + cmd.operands;
                 Console.WriteLine(result);
             }
 
