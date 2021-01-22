@@ -435,7 +435,7 @@ namespace u8_disasm
                 case U8_L_ER_DA:
 				case U8_ST_ER_DA:
 					//fmt_op_str("er%d, %04xh", op1, s_word);
-					cmd.operands = $"er{cmop1}, {s_word.ToString("X4")}h";
+					cmd.operands = $"er{op1}, {s_word.ToString("X4")}h";
 					break;
 
 				// Register load/store instructions
