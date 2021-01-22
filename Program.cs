@@ -16,7 +16,7 @@ namespace u8_disasm
             for(int i = 0; i < 1000; i+= ret)
             {
                 string result = $"{i.ToString("X8")}: ";
-                byte[] buf = new byte[6];
+                byte[] buf = new byte[10];
 
                 for (int b = 0; b < buf.Length; b++)
                     buf[b] = ROM[i+b];
@@ -30,7 +30,8 @@ namespace u8_disasm
                     break;
                 }
 
-                result += cmd.opcode.ToString("X4").PadRight(6) + cmd.instr.PadRight(10) + cmd.operands;
+                result += cmd.opcode.ToString("X4").PadRight(5);
+                result += cmd.instr.PadRight(10) + cmd.operands;
                 Console.WriteLine(result);
             }
 

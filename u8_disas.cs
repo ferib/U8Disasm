@@ -325,7 +325,7 @@ namespace u8_disasm
                 op1 = u8_decode_operand(inst, u8_inst.u8inst[cmd.type].op1_mask);
                 cmd.op1 = op1;
             }
-            if(u8_inst.u8inst[cmd.type].ops == 1) // or get op1 and op2
+            if(u8_inst.u8inst[cmd.type].ops == 2) // or get op1 and op2
             {
                 op1 = u8_decode_operand(inst, u8_inst.u8inst[cmd.type].op1_mask);
                 op2 = u8_decode_operand(inst, u8_inst.u8inst[cmd.type].op2_mask);
@@ -378,7 +378,7 @@ namespace u8_disasm
 				case U8_ADD_ER:
 				case U8_MOV_ER:
 				case U8_CMP_ER:
-					cmd.operands = $"er{op1} er{op2}";
+					cmd.operands = $"er{op1} er{op2}"; // op1[11:8], op2[7:4] bitwise?
 					//fmt_op_str("er%d, er%d", op1, op2);
 					break;
 
