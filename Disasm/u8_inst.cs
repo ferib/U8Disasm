@@ -33,6 +33,12 @@ namespace u8_disasm.Disasm
         public string operands;
     };
 
+    public struct u8_usrdef
+    {
+        public string name;
+        public string description; // gives a bit more detail/full name
+    }
+
     public static class u8_inst
     {
         // Thanks : https://github.com/ferib/u8_r2_plugin/blob/master/u8_inst.c
@@ -238,6 +244,54 @@ namespace u8_disasm.Disasm
             new u8inst_t() { id=u8_disas.U8_PRE_R, name="dsr", len=2, ops=1, flags=0b011000, ins=0x900f, ins_mask=0xff0f, op1_mask=0x00f0, op2_mask=0x0000},
 
             new u8inst_t() { id=u8_disas.U8_ILL, name="dw", len=1, ops=0, flags=0b000000, ins=0xffff, ins_mask=0x0000, op1_mask=0x0000, op2_mask=0x0000}
+        };
+
+        public static u8_usrdef[] u8userdefinitions =
+        {
+            new u8_usrdef() { name = "addc", description = "Addition with carry"},
+            new u8_usrdef() { name = "cmpc", description = "Comparison with carry"},
+            new u8_usrdef() { name = "and", description = "Bitwise AND"},
+            new u8_usrdef() { name = "or", description = "Bitwise OR"},
+            new u8_usrdef() { name = "xor", description = "Bitwise exlusive OR"},
+            new u8_usrdef() { name = "subc", description = "Subtract with carry"},
+            new u8_usrdef() { name = "sub", description = "Subtract"},
+            new u8_usrdef() { name = "cmp", description = "Comparison"},
+            new u8_usrdef() { name = "sll", description = "Byte-sized shit left logical"},
+            new u8_usrdef() { name = "sllc", description = "Shift left logical continued"},
+            new u8_usrdef() { name = "sra", description = "Shift right arithmetic"},
+            new u8_usrdef() { name = "srl", description = "Shift right logical"},
+            new u8_usrdef() { name = "srlc", description = "Shift right logical continued"},
+            new u8_usrdef() { name = "l", description = "data transfer"},
+            new u8_usrdef() { name = "st", description = "data transfer"},
+            new u8_usrdef() { name = "add", description = "Addition"},
+            new u8_usrdef() { name = "push", description = "General register save"},
+            new u8_usrdef() { name = "pop", description = "General register restore"},
+            new u8_usrdef() { name = "mov", description = "Data transfer"},
+            new u8_usrdef() { name = "lea", description = "Data transfer to EA"},
+            new u8_usrdef() { name = "daa", description = "Byte-sized decimal adjustment for addition"},
+            new u8_usrdef() { name = "das", description = "Byte-sized decimal adjustment for subtraction"},
+            new u8_usrdef() { name = "neg", description = "Negate"},
+            new u8_usrdef() { name = "sb", description = "Set bit"},
+            new u8_usrdef() { name = "rb", description = "Reset bit"},
+            new u8_usrdef() { name = "tb", description = "Test bit"},
+            new u8_usrdef() { name = "ei", description = "Enable interrupts"},
+            new u8_usrdef() { name = "di", description = "Disable interrupts"},
+            new u8_usrdef() { name = "sc", description = "Set carry flag"},
+            new u8_usrdef() { name = "rc", description = "Reset carry flag"},
+            new u8_usrdef() { name = "cplc", description = "Complement carry flag"},
+            new u8_usrdef() { name = "bc", description = "Conditional branch"},
+            new u8_usrdef() { name = "extbw", description = "Extend sign"},
+            new u8_usrdef() { name = "swi", description = "Software interrupt instruction"},
+            new u8_usrdef() { name = "brk", description = "Break instruction"},
+            new u8_usrdef() { name = "b", description = "Branch Instruction"},
+            new u8_usrdef() { name = "bl", description = "Branch Instruction"},
+            new u8_usrdef() { name = "mul", description = "Multiplication"},
+            new u8_usrdef() { name = "div", description = "Division"},
+            new u8_usrdef() { name = "inc", description = "Memory increment"},
+            new u8_usrdef() { name = "dec", description = "Memory decrement"},
+            new u8_usrdef() { name = "rt", description = "Return from subroutine"},
+            new u8_usrdef() { name = "rti", description = "Return from interrupt"},
+            new u8_usrdef() { name = "nop", description = "No-operation"}
         };
     }
 }

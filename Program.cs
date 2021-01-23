@@ -13,9 +13,8 @@ namespace u8_disasm
     {
         static void Main(string[] args)
         {
-            //byte[] ROM = File.ReadAllBytes(@"L:\Projects\Calculator\Casio\ROM_Dump.mem");
             u8_Disasm disasm = new u8_Disasm(@"L:\Projects\Calculator\Casio\ROM_Dump.mem");
-            disasm.DisassembleP(200);
+            disasm.Disassemble(2000, true);
 
             Console.WriteLine("Done");
             Console.ReadKey();
