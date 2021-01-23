@@ -23,22 +23,21 @@ namespace u8_disasm.Disasm
             Index = 0;
         }
 
-        public string[] Disassemble(int lineCount = 1)
+        public string[] Disassemble(int lineCount = 1, bool printLines = false)
         {
             int ret = 2; // word
             List<string> tmpResult = new List<string>(); 
-            int linesDone = 0;
-            string strBuilder = "";
-            while(linesDone < lineCount)
+            while(tmpResult.Count < lineCount)
             {
-                strBuilder = $"{ this.Index.ToString("X8")} ";
+                string result = $"{ this.Index.ToString("X8")} ";
 
-                // should fix end of array
+                // should fix end of array???
                 int grabSize = 6;
                 if ((this.Index + grabSize) - this.Buffer.Length > 0)
                     grabSize = (this.Index + grabSize) - this.Buffer.Length;
                 byte[] buf = new byte[grabSize]; // FIX End of array error?
 
+                // fill temp buff
                 for (int b = 0; b < buf.Length; b++)
                     buf[b] = this.Buffer[this.Index + b];
 
@@ -46,7 +45,10 @@ namespace u8_disasm.Disasm
                 ret = asm_u8.dissaseble(ref buf, buf.Length, ref cmd);
                 if (ret == -1)
                 {
-                    strBuilder += "err";
+                    result += "err";
+                    tmpResult.Add(result);
+                    if (printLines)
+                        PrintDisasm(result);
                     break;
                 }
 
@@ -55,20 +57,21 @@ namespace u8_disasm.Disasm
                 string bytestr = "";
                 for (int j = 0; j < ret; j += 2)
                     bytestr += BitConverter.ToUInt16(buf, j).ToString("X4") + " ";
-                strBuilder += bytestr.PadRight(15) + cmd.instr.PadRight(10) + cmd.operands;
-                tmpResult.Add(strBuilder);
-                linesDone++;
+                result += bytestr.PadRight(15) + cmd.instr.PadRight(10) + cmd.operands;
+                tmpResult.Add(result);
+                if (printLines)
+                    PrintDisasm(result);
             }
 
             return tmpResult.ToArray();
         }
 
+        // kinda useless now ;P
         public void DisassembleP(int lineCount = 1)
         {
             foreach(var l in Disassemble(lineCount))
                 PrintDisasm(l);
         }
-
 
         // Print kewl string
         private void PrintDisasm(string disasm)
