@@ -7,6 +7,7 @@ using System.IO;
 using System.Globalization;
 using u8_lib;
 using u8_lib.Disasm;
+using System.Threading;
 
 namespace u8_disasm
 {
@@ -14,8 +15,16 @@ namespace u8_disasm
     {
         static void Main(string[] args)
         {
-            u8_Disasm disasm = new u8_Disasm(@"L:\Projects\Calculator\Casio\ROM_Dump.mem");
-            disasm.Disassemble(2000, true);
+
+            u8_Disasm disasm;
+
+            Thread t = new Thread(doTask);
+            t.Start();
+
+            void doTask()
+            {
+                disasm = new u8_Disasm(@"L:\Projects\Calculator\Casio\ROM_Dump.mem");
+            }
 
             Console.WriteLine("Done");
             Console.ReadKey();

@@ -50,8 +50,8 @@ namespace u8_lib.Disasm
             this.Blocks = new List<u8_CodeBlock>();
             this.Stubs = new List<List<u8_CodeBlock>>();
             this.Disasm = disasm;
-            if (!Analyse())
-                Console.WriteLine("Err, Flow Analysis failed OwO");
+            //if (!Analyse())
+            //    Console.WriteLine("Err, Flow Analysis failed OwO");
         }
 
         public bool Analyse()
@@ -188,6 +188,7 @@ namespace u8_lib.Disasm
                     this.Blocks.Add(newBlock);
                     Cmds.Clear();
                     newBlock = new u8_CodeBlock(null);
+                    isEndOfBlock = false;
                 }
             }
 
@@ -290,24 +291,32 @@ namespace u8_lib.Disasm
 
         private bool GetStubs()
         {
+            this.Stubs.Clear();
+
             if (this.Blocks == null)
                 return false;
 
             // TODO: do afterwards after main analysis is done??
             // loop blocks - check if this is end of sub
 
-            
-            List<u8_CodeBlock> Splits = new List<u8_CodeBlock>(); // keep track of when we split so we can come back later
-            for (int i = 0; i < this.Blocks.Count; i++)
+
+            //List<u8_CodeBlock> Splits = new List<u8_CodeBlock>(); // keep track of when we split so we can come back later
+            //for (int i = 0; i < this.Blocks.Count; i++)
+
+            bool JobsDone = false;
+            int Count = 0;
+            while(Count < this.Blocks.Count) // give the chance to count every block?
             {
                 int depth = 0;
                 List<u8_CodeBlock> CurrentSub = new List<u8_CodeBlock>();
-                if (!IsAlreadyDiscovered(this.Blocks[i].Address))
+                if (!IsAlreadyDiscovered(this.Blocks[Count].Address))
                 {
                     // TODO: Split blocks based on branch destination addresses (once we get branch fully working hehe)
-                    GetFlowBlocks(i, ref CurrentSub, ref depth);   // get flow for undiscovered blocks
-                    this.Stubs.Add(CurrentSub);
-                } 
+                    GetFlowBlocks(Count, ref CurrentSub, ref depth);   // get flow for undiscovered blocks
+                    lock (this.Stubs)
+                        this.Stubs.Add(CurrentSub);
+                }
+                Count++;
             }
 
             return true;
@@ -368,28 +377,31 @@ namespace u8_lib.Disasm
                     }
                     if(!isVisited)
                         GetFlowBlocks(bIndex, ref CurrentSub, ref depth); // How to stackoverflow
-                }
-                   
+                }  
             }
             return;
         }
 
         private bool IsAlreadyDiscovered(int address)
         {
-            if (this.Stubs == null)
-                return false;
-
-            // TODO: optimize this?
-            foreach (var s in this.Stubs)
+            lock (this.Stubs)
             {
-                foreach(var b in s)
+                if (this.Stubs == null)
+                    return false;
+
+                // TODO: optimize this?
+                foreach (var s in this.Stubs)
                 {
-                    //if (b.Address <= address && b.Ops[b.Ops.Length - 1].address >= address)
-                    //if (b.Ops[0].address <= address && b.Ops[b.Ops.Length - 1].address >= address)
-                    if (address >= b.Ops[0].address && address <= b.Ops[b.Ops.Length - 1].address)
-                        return true;
+                    foreach (var b in s)
+                    {
+                        //if (b.Address <= address && b.Ops[b.Ops.Length - 1].address >= address)
+                        //if (b.Ops[0].address <= address && b.Ops[b.Ops.Length - 1].address >= address)
+                        if (address >= b.Ops[0].address && address <= b.Ops[b.Ops.Length - 1].address)
+                            return true;
+                    }
                 }
             }
+            
 
             return false;
         }
@@ -414,7 +426,7 @@ namespace u8_lib.Disasm
             if(bb == null)
             {
                 // create new block
-                var block = BuildBlock(address);
+                var block = BuildBlock(address); // this sneaky!
 
                 // update
                 bb = FindBlock(address);
