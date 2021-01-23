@@ -50,10 +50,10 @@ namespace u8_Forum
                 var sub = disasm.FlowAnalyses.Stubs[lstSubs.SelectedIndex];
                 foreach (var block in sub)
                 {
-                    if (block == null)
+                    if (disasm.FlowAnalyses.Blocks[block] == null)
                         continue;
 
-                    foreach (var o in block.Ops)
+                    foreach (var o in disasm.FlowAnalyses.Blocks[block].Ops)
                     {
                         DataGridViewRow row = (DataGridViewRow)dataGridView1.Rows[0].Clone();
                         row.Cells[0].Value = o.address.ToString("X4");
@@ -84,7 +84,7 @@ namespace u8_Forum
 
                 lstSubs.Items.Clear();
                 foreach (var x in disasm.FlowAnalyses.Stubs)
-                    lstSubs.Items.Add("sub_" + x[0].Address.ToString("X8"));
+                    lstSubs.Items.Add("sub_" + disasm.FlowAnalyses.Blocks[x[0]].Address.ToString("X8"));
                 lblInfo.Text = $"Subs Count: {disasm.FlowAnalyses.Stubs.Count}\nByte Count: {disasm.Buffer.Length}";
                 CachedSubCount = disasm.FlowAnalyses.Stubs.Count;
             }
