@@ -38,6 +38,7 @@
             this.label1 = new System.Windows.Forms.Label();
             this.lblInfo = new System.Windows.Forms.Label();
             this.timer1 = new System.Windows.Forms.Timer(this.components);
+            this.button1 = new System.Windows.Forms.Button();
             ((System.ComponentModel.ISupportInitialize)(this.dataGridView1)).BeginInit();
             this.SuspendLayout();
             // 
@@ -47,7 +48,7 @@
             this.lstSubs.FormattingEnabled = true;
             this.lstSubs.Location = new System.Drawing.Point(668, 28);
             this.lstSubs.Name = "lstSubs";
-            this.lstSubs.Size = new System.Drawing.Size(120, 277);
+            this.lstSubs.Size = new System.Drawing.Size(120, 251);
             this.lstSubs.TabIndex = 0;
             this.lstSubs.SelectedIndexChanged += new System.EventHandler(this.lstSubs_SelectedIndexChanged);
             // 
@@ -96,7 +97,7 @@
             // lblInfo
             // 
             this.lblInfo.AutoSize = true;
-            this.lblInfo.Location = new System.Drawing.Point(665, 309);
+            this.lblInfo.Location = new System.Drawing.Point(665, 282);
             this.lblInfo.Name = "lblInfo";
             this.lblInfo.Size = new System.Drawing.Size(60, 13);
             this.lblInfo.TabIndex = 3;
@@ -107,11 +108,22 @@
             this.timer1.Interval = 1000;
             this.timer1.Tick += new System.EventHandler(this.timer1_Tick);
             // 
+            // button1
+            // 
+            this.button1.Location = new System.Drawing.Point(668, 327);
+            this.button1.Name = "button1";
+            this.button1.Size = new System.Drawing.Size(64, 23);
+            this.button1.TabIndex = 4;
+            this.button1.Text = "Pause";
+            this.button1.UseVisualStyleBackColor = true;
+            this.button1.Click += new System.EventHandler(this.button1_Click);
+            // 
             // Form1
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
             this.ClientSize = new System.Drawing.Size(800, 362);
+            this.Controls.Add(this.button1);
             this.Controls.Add(this.lblInfo);
             this.Controls.Add(this.label1);
             this.Controls.Add(this.dataGridView1);
@@ -136,6 +148,7 @@
         private System.Windows.Forms.Label label1;
         private System.Windows.Forms.Label lblInfo;
         private System.Windows.Forms.Timer timer1;
+        private System.Windows.Forms.Button button1;
     }
 }
 

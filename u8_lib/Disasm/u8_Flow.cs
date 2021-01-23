@@ -415,6 +415,10 @@ namespace u8_lib.Disasm
             {
                 if (address >= b.Ops[0].address && address <= b.Ops[b.Ops.Length - 1].address)
                     return b;
+
+                // its okaye, we can make new blocks if this aint the right start point!
+                //if(address >= b.Ops[0].address && address <= b.Ops[0].address+2)
+                //    return b;
             }
 
             return null;

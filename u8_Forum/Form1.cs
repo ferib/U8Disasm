@@ -15,6 +15,9 @@ namespace u8_Forum
     public partial class Form1 : Form
     {
         public static u8_Disasm disasm;
+        public static Thread worker;
+        private int CachedSubCount = 0;
+
         public Form1()
         {
             InitializeComponent();
@@ -23,9 +26,10 @@ namespace u8_Forum
 
             timer1.Enabled = true;
 
-            Thread t = new Thread(new ParameterizedThreadStart(doTask));
-            t.Start(null);
-
+            worker = new Thread(new ParameterizedThreadStart(doTask));
+            worker.Name = "u8_Disasm";
+            worker.Start(null);
+            
             void doTask(object x)
             {
                 Form1.disasm = new u8_Disasm(@"L:\Projects\Calculator\Casio\ROM_Dump.mem");
@@ -75,10 +79,14 @@ namespace u8_Forum
 
             lock(disasm.FlowAnalyses.Stubs)
             {
+                if (CachedSubCount == disasm.FlowAnalyses.Stubs.Count)
+                    return;
+
                 lstSubs.Items.Clear();
                 foreach (var x in disasm.FlowAnalyses.Stubs)
                     lstSubs.Items.Add("sub_" + x[0].Address.ToString("X8"));
                 lblInfo.Text = $"Subs Count: {disasm.FlowAnalyses.Stubs.Count}\nByte Count: {disasm.Buffer.Length}";
+                CachedSubCount = disasm.FlowAnalyses.Stubs.Count;
             }
 
 
@@ -87,6 +95,18 @@ namespace u8_Forum
         private void timer1_Tick(object sender, EventArgs e)
         {
             updateSubsView();
+        }
+
+        private void button1_Click(object sender, EventArgs e)
+        {
+            // quick & dirty
+            if(worker != null & worker.IsAlive)
+            {
+                if (worker.ThreadState == ThreadState.Suspended)
+                    worker.Resume();
+                else
+                    worker.Suspend();
+            }
         }
     }
 }
