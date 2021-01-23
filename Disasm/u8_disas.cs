@@ -2,6 +2,7 @@
 
 namespace u8_disasm.Disasm
 {
+    // TODO: Make Enum?
     public static class u8_disas
     {
         // define u8 instructions;

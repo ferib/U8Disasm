@@ -45,6 +45,7 @@
   <ItemGroup>
     <Compile Include="Disasm\asm_u8.cs" />
     <Compile Include="Disasm\u8_Disasm.cs" />
+    <Compile Include="Disasm\u8_Flow.cs" />
     <Compile Include="Program.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="Disasm\u8_disas.cs" />

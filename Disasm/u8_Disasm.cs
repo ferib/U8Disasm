@@ -11,6 +11,7 @@ namespace u8_disasm.Disasm
     {
         public string FilePath;
         public byte[] Buffer;
+        private u8_Flow FlowAnalyses;
 
         // TODO: cache disassembled lines?
         public Dictionary<int, string> CachedDisassembly;
@@ -25,6 +26,8 @@ namespace u8_disasm.Disasm
             this.Buffer = File.ReadAllBytes(this.FilePath);
             this.CachedDisassembly = new Dictionary<int, string>();
             this.Index = 0;
+            this.FlowAnalyses = new u8_Flow(this);
+            this.FlowAnalyses.Analyse();
         }
 
         private void _CacheDisassembly(int i, string str)
@@ -43,7 +46,7 @@ namespace u8_disasm.Disasm
             {
                 string result = $"{ this.Index.ToString("X8")} ";
 
-                // should fix end of array???
+                // TODO: FIX THIS MESS WTF?
                 int grabSize = 6;
                 if ((this.Index + grabSize) - this.Buffer.Length > 0)
                     grabSize = (this.Index + grabSize) - this.Buffer.Length;
@@ -80,6 +83,8 @@ namespace u8_disasm.Disasm
 
             return tmpResult.ToArray();
         }
+
+        
 
         // TODO: Port to GUI class
         private void PrintDisasm(string disasm)
