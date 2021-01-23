@@ -77,7 +77,7 @@ namespace u8_lib.Disasm
 
             // ALL Conditional relative branch instructions:
             int ret = 2;
-            int BlockStart = 0;
+            int AddrBlockStart = 0;
             List<u8_cmd> Cmds = new List<u8_cmd>();
             for (int i = 0; i < this.Disasm.Buffer.Length-6; i+= ret)
             {
@@ -121,10 +121,8 @@ namespace u8_lib.Disasm
                         // if cond ? radr : PC+=2
                         // if op1 < 0 then negative else positive;
                         // conditions? dont care actually ;D
-
                         newBlock.GreenBlock = opcode.address + opcode.op1; // jumps to
                         newBlock.RedBlock = opcode.address += 2; // skips jumps
-
                         isEndOfBlock = true;
                         break;
                     case u8_disas.U8_B_AD: // branch
@@ -149,9 +147,9 @@ namespace u8_lib.Disasm
                 {
                     // save block
                     newBlock.Ops = Cmds.ToArray();
-                    newBlock.Address = BlockStart;
+                    newBlock.Address = newBlock.Ops[0].address;
                     this.Blocks.Add(newBlock);
-                    BlockStart = i + 1; // set for next
+                    AddrBlockStart = i; // set for next
                     Cmds.Clear();
                 }
             }
@@ -167,43 +165,83 @@ namespace u8_lib.Disasm
             // TODO: do afterwards after main analysis is done??
             // loop blocks - check if this is end of sub
 
-            List<u8_CodeBlock> currentSub = new List<u8_CodeBlock>();
+            
+            List<u8_CodeBlock> Splits = new List<u8_CodeBlock>(); // keep track of when we split so we can come back later
             for (int i = 0; i < this.Blocks.Count; i++)
             {
-                bool isEndOfSub = false;
-
-                // check if block jumps outside of the collection
-                int[] jumps = new int[] { this.Blocks[i].BlueBlock, this.Blocks[i].GreenBlock, this.Blocks[i].RedBlock };
-                foreach(var j in jumps)
+                int depth = 0;
+                List<u8_CodeBlock> CurrentSub = new List<u8_CodeBlock>();
+                if (!IsAlreadyDiscovered(this.Blocks[i].Address))
                 {
-                    if (j == -1)
-                        continue; //skip
-
-                    // check if existing block
-                    var block = GetBlock(j);
-                    bool isNew = true;
-                    foreach(var eb in currentSub)
-                    {
-                        if(eb == block)
-                        {
-                            isNew = false;
-                            break;
-                        }
-                    }
-                    if (isNew)
-                        currentSub.Add(block);
-                    else
-                    {
-                        isEndOfSub = true; // hmm idk?
-                        this.Stubs.Add(currentSub);
-                        currentSub = new List<u8_CodeBlock>();
-                    } 
-                }
-
-                currentSub.Add(this.Blocks[i]);
+                    GetFlowBlocks(i, ref CurrentSub, ref depth);   // get flow for undiscovered blocks
+                    this.Stubs.Add(CurrentSub);
+                } 
             }
 
             return true;
+        }
+
+        // get all blocks based on its flow
+        private void GetFlowBlocks(int BlockIndex, ref List<u8_CodeBlock> CurrentSub, ref int depth)
+        {
+            // TOOD: Cleanup
+            // check if already in CurrentSub (meaning we merging back to normal flow)
+            bool isDuplicate = false;
+            foreach(var b in CurrentSub)
+            {
+                if(b.Address == this.Blocks[BlockIndex].Address)
+                {
+                    isDuplicate = true;
+                    break;
+                }
+            }
+            if (isDuplicate)
+                return;
+
+            depth++; // keep track of how deep we are
+            CurrentSub.Add(this.Blocks[BlockIndex]);
+            // check if block jumps outside of the collection
+            int[] jumps = new int[] { this.Blocks[BlockIndex].BlueBlock, this.Blocks[BlockIndex].GreenBlock, this.Blocks[BlockIndex].RedBlock };
+
+            //// check if we need to split
+            //int jumpcount = 0;
+            //foreach (var j in jumps)
+            //    if (j != -1)
+            //        jumpcount++;
+
+            //if (jumpcount > 1)
+            //    Splits.Add(this.Blocks[BlockIndex]); // save this block so we can come back later?
+            //                                // NOTE: go recursive?
+
+            // check all 'possible 3' jumps, its either 1 or 2 destinations that need to be looked into
+            foreach (var j in jumps)
+            {
+                if (j == -1)
+                    continue; //skip
+                // recursive ;D
+                int bIndex = GetBlockIndex(j);
+                if(bIndex != -1 && depth < 30)
+                    GetFlowBlocks(bIndex, ref CurrentSub, ref depth); // How to stackoverflow
+            }
+            return;
+        }
+
+        private bool IsAlreadyDiscovered(int address)
+        {
+            if (this.Stubs == null)
+                return false;
+
+            // TODO: optimize this?
+            foreach (var s in this.Stubs)
+            {
+                foreach(var b in s)
+                {
+                    if (b.Address >= address && b.Ops[b.Ops.Length - 1].address <= address)
+                        return true;
+                }
+            }
+
+            return false;
         }
 
         private u8_CodeBlock GetBlock(int address)
@@ -225,6 +263,11 @@ namespace u8_lib.Disasm
             }
 
             return null;
+        }
+
+        private int GetBlockIndex(int address)
+        {
+            return this.Blocks.IndexOf(GetBlock(address));
         }
     }
 }
