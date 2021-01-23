@@ -43,11 +43,12 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="asm_u8.cs" />
+    <Compile Include="Disasm\asm_u8.cs" />
+    <Compile Include="Disasm\u8_Disasm.cs" />
     <Compile Include="Program.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
-    <Compile Include="u8_disas.cs" />
-    <Compile Include="u8_inst.cs" />
+    <Compile Include="Disasm\u8_disas.cs" />
+    <Compile Include="Disasm\u8_inst.cs" />
   </ItemGroup>
   <ItemGroup>
     <None Include="App.config" />

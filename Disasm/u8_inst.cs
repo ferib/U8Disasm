@@ -1,6 +1,6 @@
 ﻿using System;
 
-namespace u8_disasm
+namespace u8_disasm.Disasm
 {
     public struct u8inst_t
     {

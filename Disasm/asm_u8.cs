@@ -4,7 +4,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace u8_disasm
+namespace u8_disasm.Disasm
 {
     public static class asm_u8
     {
