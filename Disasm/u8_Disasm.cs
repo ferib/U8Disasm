@@ -12,6 +12,9 @@ namespace u8_disasm.Disasm
         public string FilePath;
         public byte[] Buffer;
 
+        // TODO: cache disassembled lines?
+        public Dictionary<int, string> CachedDisassembly;
+
         public int Index; // current RIP-ish
 
         public u8_Disasm(string path)
@@ -19,8 +22,17 @@ namespace u8_disasm.Disasm
             if (!File.Exists(path))
                 return;
             this.FilePath = path;
-            Buffer = File.ReadAllBytes(this.FilePath);
-            Index = 0;
+            this.Buffer = File.ReadAllBytes(this.FilePath);
+            this.CachedDisassembly = new Dictionary<int, string>();
+            this.Index = 0;
+        }
+
+        private void _CacheDisassembly(int i, string str)
+        {
+            if (this.CachedDisassembly.ContainsKey(i))
+                this.CachedDisassembly[i] = str;
+            else
+                this.CachedDisassembly.Add(i, str);
         }
 
         public string[] Disassemble(int lineCount = 1, bool printLines = false)
@@ -59,6 +71,9 @@ namespace u8_disasm.Disasm
                     bytestr += BitConverter.ToUInt16(buf, j).ToString("X4") + " ";
                 result += bytestr.PadRight(15) + cmd.instr.PadRight(10) + cmd.operands;
                 tmpResult.Add(result);
+
+                _CacheDisassembly(this.Index, result); 
+
                 if (printLines)
                     PrintDisasm(result);
             }
@@ -66,14 +81,7 @@ namespace u8_disasm.Disasm
             return tmpResult.ToArray();
         }
 
-        // kinda useless now ;P
-        public void DisassembleP(int lineCount = 1)
-        {
-            foreach(var l in Disassemble(lineCount))
-                PrintDisasm(l);
-        }
-
-        // Print kewl string
+        // TODO: Port to GUI class
         private void PrintDisasm(string disasm)
         {
             ConsoleColor fold = Console.ForegroundColor;
