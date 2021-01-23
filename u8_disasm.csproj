@@ -43,16 +43,17 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="Disasm\asm_u8.cs" />
-    <Compile Include="Disasm\u8_Disasm.cs" />
-    <Compile Include="Disasm\u8_Flow.cs" />
     <Compile Include="Program.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
-    <Compile Include="Disasm\u8_disas.cs" />
-    <Compile Include="Disasm\u8_inst.cs" />
   </ItemGroup>
   <ItemGroup>
     <None Include="App.config" />
+  </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\u8_lib\u8_lib.csproj">
+      <Project>{c56cda59-e07d-4588-86f9-6d1180ae2f64}</Project>
+      <Name>u8_lib</Name>
+    </ProjectReference>
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
 </Project>

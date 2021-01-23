@@ -5,7 +5,8 @@ using System.Text;
 using System.Threading.Tasks;
 using System.IO;
 using System.Globalization;
-using u8_disasm.Disasm;
+using u8_lib;
+using u8_lib.Disasm;
 
 namespace u8_disasm
 {
