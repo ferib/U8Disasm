@@ -27,7 +27,6 @@ namespace u8_lib.Disasm
             this.CachedDisassembly = new Dictionary<int, string>();
             this.Index = 0;
             this.FlowAnalyses = new u8_Flow(this);
-            this.FlowAnalyses.Analyse();
         }
 
         private void _CacheDisassembly(int i, string str)

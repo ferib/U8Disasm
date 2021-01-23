@@ -68,7 +68,7 @@ namespace u8_lib.Disasm
             return true;
         }
 
-        private bool GetBlocks()
+        private bool GetBlocks_OLD()
         {
             this.Blocks.Clear();
 
@@ -79,7 +79,8 @@ namespace u8_lib.Disasm
             int ret = 2;
             int AddrBlockStart = 0;
             List<u8_cmd> Cmds = new List<u8_cmd>();
-            for (int i = 0; i < this.Disasm.Buffer.Length-6; i+= ret)
+            //for (int i = 0; i < this.Disasm.Buffer.Length-6; i+= ret)
+            for (int i = 0; i < 0x1000-6; i+= ret) // dont kill the CPU
             {
                 var newBlock = new u8_CodeBlock(null);
                 bool isEndOfBlock = false;
@@ -157,6 +158,136 @@ namespace u8_lib.Disasm
             return true;
         }
 
+        private bool GetBlocks()
+        {
+            this.Blocks.Clear();
+
+            // Split all blocks based on branch conditions and terminate by return
+            // basically just check for anything thats capable of modifying the Instruction Pointer
+
+            // ALL Conditional relative branch instructions:
+            int ret = 2;
+            int AddrBlockStart = 0;
+            bool isEndOfBlock = false;
+            List<u8_cmd> Cmds = new List<u8_cmd>();
+            var newBlock = new u8_CodeBlock(null);
+            // change to while;true loop?
+            //for (int i = 0; i < this.Disasm.Buffer.Length-6; i+= ret)
+            for (int i = 0; i < this.Disasm.Buffer.Length - 6; i += ret) // dont kill the CPU
+            {
+                u8_cmd cmd = new u8_cmd();
+                ret = GetBlock(i, ref cmd, ref newBlock, ref isEndOfBlock);
+                cmd.address = i;
+                Cmds.Add(cmd);
+
+                if (isEndOfBlock)
+                {
+                    // save block
+                    newBlock.Ops = Cmds.ToArray();
+                    newBlock.Address = newBlock.Ops[0].address;
+                    this.Blocks.Add(newBlock);
+                    Cmds.Clear();
+                    newBlock = new u8_CodeBlock(null);
+                }
+            }
+
+            // TODO: Replace with BuildBlock()
+
+            return true;
+        }
+
+        // disassembles with block propertys
+        private int GetBlock(int Address, ref u8_cmd Cmd, ref u8_CodeBlock newBlock, ref bool isEndOfBlock)
+        {
+            // ALL Conditional relative branch instructions:
+            int ret = -1;
+            
+            byte[] buf = new byte[6];
+
+            if (Address + 6 > this.Disasm.Buffer.Length)
+            {
+                isEndOfBlock = true; // wont come back again
+                return - 1; // Cia Adios
+            }
+                
+
+            // fill temp buff
+            for (int b = 0; b < buf.Length; b++)
+                buf[b] = this.Disasm.Buffer[Address + b];
+
+            // get opcode
+            //u8_cmd opcode = new u8_cmd();
+            ret = u8_disas.u8_decode_opcode(buf, buf.Length, ref Cmd);
+            Cmd.address = Address;// dafuq???
+            //Cmds.Add(opcode);
+
+            // check branches
+            switch (Cmd.type)
+            {
+                case u8_disas.U8_BGE_RAD: // conditional branch
+                case u8_disas.U8_BLT_RAD:
+                case u8_disas.U8_BGT_RAD:
+                case u8_disas.U8_BLE_RAD:
+                case u8_disas.U8_BGES_RAD:
+                case u8_disas.U8_BLTS_RAD:
+                case u8_disas.U8_BGTS_RAD:
+                case u8_disas.U8_BLES_RAD:
+                case u8_disas.U8_BNE_RAD:
+                case u8_disas.U8_BEQ_RAD:
+                case u8_disas.U8_BNV_RAD:
+                case u8_disas.U8_BOV_RAD:
+                case u8_disas.U8_BPS_RAD:
+                case u8_disas.U8_BNS_RAD:
+                case u8_disas.U8_BAL_RAD:
+                    // if cond ? radr : PC+=2
+                    // if op1 < 0 then negative else positive;
+                    // conditions? dont care actually ;D
+                    newBlock.GreenBlock = Cmd.address + Cmd.op1; // jumps to
+                    newBlock.RedBlock = Cmd.address += 2; // skips jumps
+                    isEndOfBlock = true;
+                    break;
+                case u8_disas.U8_B_AD: // branch
+                case u8_disas.U8_BL_AD:
+                    // PC = cadr[15:0] (op1) + second word
+                    newBlock.BlueBlock = (Cmd.op1 * 0x10000) + Cmd.s_word; // segment + word??
+                    isEndOfBlock = true;
+                    break;
+                case u8_disas.U8_B_ER:
+                case u8_disas.U8_BL_ER:
+                    // jumps to er{op1} - eeeh, idk what that is yet >.<
+                    isEndOfBlock = true;
+                    break;
+                case u8_disas.U8_RT: // return from subroutine?
+                    isEndOfBlock = true;
+                    break;
+                default:
+                    break;
+            }
+
+            return ret;
+        }
+
+        private u8_CodeBlock BuildBlock(int Address)
+        {
+
+            bool complete = false;
+            int offset = 0;
+            List<u8_cmd> Cmds = new List<u8_cmd>();
+            var newBlock = new u8_CodeBlock(null);
+            while (!complete)
+            {
+                u8_cmd cmd = new u8_cmd();
+                offset += GetBlock(Address+offset, ref cmd, ref newBlock, ref complete);
+                Cmds.Add(cmd);
+            }
+
+            // save block 
+            newBlock.Ops = Cmds.ToArray();
+            newBlock.Address = newBlock.Ops[0].address;
+            this.Blocks.Add(newBlock);
+            return newBlock;
+        }
+
         private bool GetStubs()
         {
             if (this.Blocks == null)
@@ -173,6 +304,7 @@ namespace u8_lib.Disasm
                 List<u8_CodeBlock> CurrentSub = new List<u8_CodeBlock>();
                 if (!IsAlreadyDiscovered(this.Blocks[i].Address))
                 {
+                    // TODO: Split blocks based on branch destination addresses (once we get branch fully working hehe)
                     GetFlowBlocks(i, ref CurrentSub, ref depth);   // get flow for undiscovered blocks
                     this.Stubs.Add(CurrentSub);
                 } 
@@ -195,11 +327,13 @@ namespace u8_lib.Disasm
                     break;
                 }
             }
-            if (isDuplicate)
-                return;
+            if (!isDuplicate)
+                CurrentSub.Add(this.Blocks[BlockIndex]);
+            //else
+            //    depth--; // calc the depth los and subtract?
 
             depth++; // keep track of how deep we are
-            CurrentSub.Add(this.Blocks[BlockIndex]);
+            
             // check if block jumps outside of the collection
             int[] jumps = new int[] { this.Blocks[BlockIndex].BlueBlock, this.Blocks[BlockIndex].GreenBlock, this.Blocks[BlockIndex].RedBlock };
 
@@ -219,9 +353,23 @@ namespace u8_lib.Disasm
                 if (j == -1)
                     continue; //skip
                 // recursive ;D
-                int bIndex = GetBlockIndex(j);
-                if(bIndex != -1 && depth < 30)
-                    GetFlowBlocks(bIndex, ref CurrentSub, ref depth); // How to stackoverflow
+                int bIndex = FindBlockIndex(j);
+                if(bIndex != -1 && depth < 60)
+                {
+                    // check if already visited in this sub
+                    bool isVisited = false;
+                    foreach(var b in CurrentSub)
+                    {
+                        if (j == b.Address) // if jump_address == existing block address
+                        {
+                            isVisited = true;
+                            break;
+                        }
+                    }
+                    if(!isVisited)
+                        GetFlowBlocks(bIndex, ref CurrentSub, ref depth); // How to stackoverflow
+                }
+                   
             }
             return;
         }
@@ -236,7 +384,9 @@ namespace u8_lib.Disasm
             {
                 foreach(var b in s)
                 {
-                    if (b.Address >= address && b.Ops[b.Ops.Length - 1].address <= address)
+                    //if (b.Address <= address && b.Ops[b.Ops.Length - 1].address >= address)
+                    //if (b.Ops[0].address <= address && b.Ops[b.Ops.Length - 1].address >= address)
+                    if (address >= b.Ops[0].address && address <= b.Ops[b.Ops.Length - 1].address)
                         return true;
                 }
             }
@@ -244,30 +394,32 @@ namespace u8_lib.Disasm
             return false;
         }
 
-        private u8_CodeBlock GetBlock(int address)
+        private u8_CodeBlock FindBlock(int address)
         {
             if (this.Blocks == null)
                 return null;
 
-            // TODO: optimize this?
             foreach(var b in this.Blocks)
             {
-                if (b.Address == address)
+                if (address >= b.Ops[0].address && address <= b.Ops[b.Ops.Length - 1].address)
                     return b;
-
-                foreach(var o in b.Ops)
-                {
-                    if (o.address == address)
-                        return b;
-                }
             }
 
             return null;
         }
 
-        private int GetBlockIndex(int address)
+        private int FindBlockIndex(int address)
         {
-            return this.Blocks.IndexOf(GetBlock(address));
+            var bb = FindBlock(address);
+            if(bb == null)
+            {
+                // create new block
+                var block = BuildBlock(address);
+
+                // update
+                bb = FindBlock(address);
+            }
+            return this.Blocks.IndexOf(bb);
         }
     }
 }
