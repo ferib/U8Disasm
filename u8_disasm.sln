@@ -1,0 +1,37 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 12.00
+# Visual Studio Version 16
+VisualStudioVersion = 16.0.30309.148
+MinimumVisualStudioVersion = 10.0.40219.1
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "u8_disasm", "u8_disasm\u8_disasm.csproj", "{4547FEFF-8176-4E1D-8352-3022212355AF}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "u8_Forum", "u8_Forum\u8_Forum.csproj", "{F25925AC-83B1-4D31-B6CF-90FB2C3F95CE}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "u8_lib", "u8_lib\u8_lib.csproj", "{C56CDA59-E07D-4588-86F9-6D1180AE2F64}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Any CPU = Debug|Any CPU
+		Release|Any CPU = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{4547FEFF-8176-4E1D-8352-3022212355AF}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{4547FEFF-8176-4E1D-8352-3022212355AF}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{4547FEFF-8176-4E1D-8352-3022212355AF}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{4547FEFF-8176-4E1D-8352-3022212355AF}.Release|Any CPU.Build.0 = Release|Any CPU
+		{F25925AC-83B1-4D31-B6CF-90FB2C3F95CE}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{F25925AC-83B1-4D31-B6CF-90FB2C3F95CE}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{F25925AC-83B1-4D31-B6CF-90FB2C3F95CE}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{F25925AC-83B1-4D31-B6CF-90FB2C3F95CE}.Release|Any CPU.Build.0 = Release|Any CPU
+		{C56CDA59-E07D-4588-86F9-6D1180AE2F64}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{C56CDA59-E07D-4588-86F9-6D1180AE2F64}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{C56CDA59-E07D-4588-86F9-6D1180AE2F64}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{C56CDA59-E07D-4588-86F9-6D1180AE2F64}.Release|Any CPU.Build.0 = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(ExtensibilityGlobals) = postSolution
+		SolutionGuid = {BAB15CD5-CD50-42B8-AADD-802A59357137}
+	EndGlobalSection
+EndGlobal
