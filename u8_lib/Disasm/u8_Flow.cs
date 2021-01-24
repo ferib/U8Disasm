@@ -15,15 +15,9 @@ namespace u8_lib.Disasm
         public u8_cmd[] Ops;
         public string[] Disassembly; // cache?
 
-        // neighbour block? - no clue how to name em otherwise
-        public int ParentBlock = -1; // parent
-        public int BlueBlock = -1; // always true
-        public int RedBlock = -1; // condition not met
-        public int GreenBlock = -1; // condition met
-        //public u8_CodeBlock ParentBlock; // parent
-        //public u8_CodeBlock BlueBlock; // always true
-        //public u8_CodeBlock RedBlock; // condition not met
-        //public u8_CodeBlock GreenBlock; // condition met
+        // We only need one jump, and then figure if its conditional or not?
+        public int JumpsToBlock = -1;
+        public int NextBlock = -1;
 
 
         public u8_CodeBlock(u8_cmd[] ops)
@@ -122,14 +116,14 @@ namespace u8_lib.Disasm
                         // if cond ? radr : PC+=2
                         // if op1 < 0 then negative else positive;
                         // conditions? dont care actually ;D
-                        newBlock.GreenBlock = opcode.address + opcode.op1; // jumps to
-                        newBlock.RedBlock = opcode.address += 2; // skips jumps
+                        newBlock.JumpsToBlock = opcode.address + opcode.op1; // jumps to
+                        newBlock.NextBlock = opcode.address += 2; // skips jumps
                         isEndOfBlock = true;
                         break;
                     case u8_disas.U8_B_AD: // branch
                     case u8_disas.U8_BL_AD:
                         // PC = cadr[15:0] (op1) + second word
-                        newBlock.BlueBlock = (opcode.op1*0x10000) + opcode.s_word; // segment + word??
+                        newBlock.JumpsToBlock = (opcode.op1*0x10000) + opcode.s_word; // segment + word??
                         isEndOfBlock = true;
                         break;
                     case u8_disas.U8_B_ER:
@@ -173,7 +167,7 @@ namespace u8_lib.Disasm
             var newBlock = new u8_CodeBlock(null);
             // change to while;true loop?
             //for (int i = 0; i < this.Disasm.Buffer.Length-6; i+= ret)
-            for (int i = 0; i < this.Disasm.Buffer.Length - 6; i += ret) // dont kill the CPU
+            for (int i = 0x01000; i < this.Disasm.Buffer.Length - 6; i += ret) // dont kill the CPU
             {
                 u8_cmd cmd = new u8_cmd();
                 ret = GetBlock(i, ref cmd, ref newBlock, ref isEndOfBlock);
@@ -210,7 +204,6 @@ namespace u8_lib.Disasm
                 isEndOfBlock = true; // wont come back again
                 return - 1; // Cia Adios
             }
-                
 
             // fill temp buff
             for (int b = 0; b < buf.Length; b++)
@@ -243,23 +236,25 @@ namespace u8_lib.Disasm
                     // if cond ? radr : PC+=2
                     // if op1 < 0 then negative else positive;
                     // conditions? dont care actually ;D
-                    newBlock.GreenBlock = Cmd.address + Cmd.op1; // jumps to
-                    newBlock.RedBlock = Cmd.address += 2; // skips jumps
+                    newBlock.JumpsToBlock = Cmd.address + Cmd.op1; // takes jump
+                    newBlock.NextBlock = Cmd.address += 2; // continue
                     isEndOfBlock = true;
                     break;
                 case u8_disas.U8_B_AD: // branch
                 case u8_disas.U8_BL_AD:
                     // PC = cadr[15:0] (op1) + second word
-                    newBlock.BlueBlock = (Cmd.op1 * 0x10000) + Cmd.s_word; // segment + word??
+                    newBlock.JumpsToBlock = (Cmd.op1 * 0x10000) + Cmd.s_word; // takes jump
+                    newBlock.NextBlock = -1; // newBlock.JumpsToBlock; // dont set so we know its forced?
                     isEndOfBlock = true;
                     break;
                 case u8_disas.U8_B_ER:
                 case u8_disas.U8_BL_ER:
                     // jumps to er{op1} - eeeh, idk what that is yet >.<
+                    newBlock.NextBlock = Cmd.address += 2; // continue
                     isEndOfBlock = true;
                     break;
                 case u8_disas.U8_RT: // return from subroutine?
-                    isEndOfBlock = true;
+                    isEndOfBlock = true; //  there is no next ;D
                     break;
                 default:
                     break;
@@ -270,7 +265,6 @@ namespace u8_lib.Disasm
 
         private u8_CodeBlock BuildBlock(int Address)
         {
-
             bool complete = false;
             int offset = 0;
             List<u8_cmd> Cmds = new List<u8_cmd>();
@@ -344,47 +338,42 @@ namespace u8_lib.Disasm
             }
             if (!isDuplicate)
                 CurrentSub.Add(this.Blocks[BlockIndex]);
-            //else
-            //    depth--; // calc the depth los and subtract?
 
             depth++; // keep track of how deep we are
             
-            // check if block jumps outside of the collection
-            int[] jumps = new int[] { this.Blocks[BlockIndex].BlueBlock, this.Blocks[BlockIndex].GreenBlock, this.Blocks[BlockIndex].RedBlock };
-
-            //// check if we need to split
-            //int jumpcount = 0;
-            //foreach (var j in jumps)
-            //    if (j != -1)
-            //        jumpcount++;
-
-            //if (jumpcount > 1)
-            //    Splits.Add(this.Blocks[BlockIndex]); // save this block so we can come back later?
-            //                                // NOTE: go recursive?
-
-            // check all 'possible 3' jumps, its either 1 or 2 destinations that need to be looked into
-            foreach (var j in jumps)
+            // check & prevent memory corrupting stuff
+            if (CurrentSub[CurrentSub.Count-1].Ops.Length > 2000)
             {
-                if (j == -1)
-                    continue; //skip
-                // recursive ;D
-                int bIndex = FindBlockIndex(j);
-                if(bIndex != -1 && depth < 60)
-                {
-                    // check if already visited in this sub
-                    bool isVisited = false;
-                    foreach(var b in CurrentSub)
-                    {
-                        if (j == b.Address) // if jump_address == existing block address
-                        {
-                            isVisited = true;
-                            break;
-                        }
-                    }
-                    if(!isVisited)
-                        GetFlowBlocks(bIndex, ref CurrentSub, ref depth); // How to stackoverflow
-                }  
+                // abort and remove in case of over 2000 instructions in one block?
+                CurrentSub.RemoveAt(CurrentSub.Count - 1); // dont kill the RAM ;)
+                //depth--;
+                return; 
             }
+
+            // do jump block
+            if (this.Blocks[BlockIndex].NextBlock != -1) // do normal blocks
+            {
+                // checkout the next block below
+                int bIndex = FindBlockIndex(this.Blocks[BlockIndex].NextBlock);
+                if (bIndex != -1 && depth < 60)
+                {
+                    // existing block found - do not visit again?
+                    GetFlowBlocks(bIndex, ref CurrentSub, ref depth);
+                }
+            }
+            if (this.Blocks[BlockIndex].JumpsToBlock != -1) // then do jumps
+            {
+                // checkout the jumpeto block
+                int bIndex = FindBlockIndex(this.Blocks[BlockIndex].JumpsToBlock);
+                if (bIndex != -1 && depth < 60)
+                {
+                    // existing block found - do not visit again?
+                    GetFlowBlocks(bIndex, ref CurrentSub, ref depth);
+                }
+            }
+            
+
+            depth--;
             return;
         }
 
@@ -421,12 +410,12 @@ namespace u8_lib.Disasm
 
             foreach(var b in this.Blocks)
             {
-                if (address >= b.Ops[0].address && address <= b.Ops[b.Ops.Length - 1].address)
-                    return b;
-
-                // its okaye, we can make new blocks if this aint the right start point!
-                //if(address >= b.Ops[0].address && address <= b.Ops[0].address+2)
+                //if (address >= b.Ops[0].address && address <= b.Ops[b.Ops.Length - 1].address)
                 //    return b;
+
+                // SLICEBLOCK: its okaye, we can make new blocks if this aint the right start point!
+                if (address >= b.Ops[0].address && address <= b.Ops[0].address + 2)
+                    return b;
             }
 
             return null;
@@ -434,11 +423,14 @@ namespace u8_lib.Disasm
 
         private int FindBlockIndex(int address)
         {
+            if (address == -1)
+                return -1;
+
             var bb = FindBlock(address);
             if(bb == null)
             {
-                // create new block
-                //var block = BuildBlock(address); // this sneaky!
+                // SLICEBLOCK: create new block
+                var block = BuildBlock(address); // this sneaky!
 
                 // update
                 bb = FindBlock(address);

@@ -34,7 +34,7 @@ namespace u8_Forum
             {
                 Form1.disasm = new u8_Disasm(@"L:\Projects\Calculator\Casio\ROM_Dump.mem");
                 Form1.disasm.FlowAnalyses.Analyse();
-                updateSubsView();
+                //updateSubsView();
             }
 
         }

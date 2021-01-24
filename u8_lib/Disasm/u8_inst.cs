@@ -294,5 +294,31 @@ namespace u8_lib.Disasm
             new u8_usrdef() { name = "rti", description = "Return from interrupt"},
             new u8_usrdef() { name = "nop", description = "No-operation"}
         };
+
+        // NOTEs:
+        /*
+            PC - Program Counter
+            CSR - Code Segment Regsiter
+            LR, ELR1, ELR2, ELR3 - Link Registers
+            LCSR, ECSR1, ECSR2, ECSR3 - CSR Backup Registers
+            EPSW1, EPSW2, EPSW3 - PSW Backup Registers
+            SP - Stack Pointer
+            EA - EA Register
+            AR - Address Register
+            DSR - Data Segment Register
+            NMI - Nonmaskable Interrupts
+            MI - Maskable Interrupts
+            SWI - Software Interrupts
+         */
+
+        // 0:0000h ~ 0:00FEh = Vector Region
+        // #0
+        // 00 ~ 04 = Reset Vectors
+        // -> 00: init value of SP, 02: reset routune entry for extern/BRK with ELEVEL 2/3, 04: reset routine entry for BRK with ELEVEL 0/1
+        // 06 ~ 7E = Hardware interrupt vectors
+        // -> 06: NMICE interrupt, 08: NMI interrupt + maskable * 59
+        // 80 ~ FE = Software interrupt vectors
+        // -> SWI #0 ~ SWI #63
+        // 0100: entry point?
     }
 }
