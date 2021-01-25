@@ -11,6 +11,8 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "U8Console", "Examples\U8Con
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "U8Disasm", "src\U8Disasm.csproj", "{A883C5B5-5246-4276-9752-1ED65415C487}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "U8Graph", "Examples\U8Graph\U8Graph.csproj", "{247694C6-70DA-4BFE-BC63-DBE2806E91BC}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -29,6 +31,10 @@ Global
 		{A883C5B5-5246-4276-9752-1ED65415C487}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{A883C5B5-5246-4276-9752-1ED65415C487}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{A883C5B5-5246-4276-9752-1ED65415C487}.Release|Any CPU.Build.0 = Release|Any CPU
+		{247694C6-70DA-4BFE-BC63-DBE2806E91BC}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{247694C6-70DA-4BFE-BC63-DBE2806E91BC}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{247694C6-70DA-4BFE-BC63-DBE2806E91BC}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{247694C6-70DA-4BFE-BC63-DBE2806E91BC}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -36,6 +42,7 @@ Global
 	GlobalSection(NestedProjects) = preSolution
 		{F25925AC-83B1-4D31-B6CF-90FB2C3F95CE} = {C5497435-85A7-449C-8EE5-E001C5D336A8}
 		{4547FEFF-8176-4E1D-8352-3022212355AF} = {C5497435-85A7-449C-8EE5-E001C5D336A8}
+		{247694C6-70DA-4BFE-BC63-DBE2806E91BC} = {C5497435-85A7-449C-8EE5-E001C5D336A8}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {DFCA355A-7D0D-4569-81EE-70E28D911E22}
