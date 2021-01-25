@@ -10,9 +10,15 @@
     <Company>ferib.dev</Company>
     <PackageTags>nX-U8/100, U8, Assembly, Disassembler, Reverse Engineering</PackageTags>
     <PackageIcon>nxu8_logo.png</PackageIcon>
+    <PackageLicenseFile>LICENSE.md</PackageLicenseFile>
+    <PackageReleaseNotes>Added nX-U8/100 Disassembler.</PackageReleaseNotes>
   </PropertyGroup>
 
   <ItemGroup>
+    <None Include="..\LICENSE.md">
+      <Pack>True</Pack>
+      <PackagePath></PackagePath>
+    </None>
     <None Include="C:\Users\Ferib\Pictures\memes\nxu8_logo.png">
       <Pack>True</Pack>
       <PackagePath></PackagePath>
