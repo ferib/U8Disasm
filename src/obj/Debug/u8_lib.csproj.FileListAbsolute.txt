@@ -1,0 +1,6 @@
+L:\Projects\u8_disasm\u8_lib\bin\Debug\u8_lib.dll
+L:\Projects\u8_disasm\u8_lib\bin\Debug\u8_lib.pdb
+L:\Projects\u8_disasm\u8_lib\obj\Debug\u8_lib.csproj.CoreCompileInputs.cache
+L:\Projects\u8_disasm\u8_lib\obj\Debug\u8_lib.dll
+L:\Projects\u8_disasm\u8_lib\obj\Debug\u8_lib.pdb
+L:\Projects\u8_disasm\u8_lib\obj\Debug\u8_lib.csprojAssemblyReference.cache

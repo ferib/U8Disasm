@@ -1,0 +1,5 @@
+L:\Projects\u8_disasm\u8_lib\obj\Debug\U8Disasm.csproj.CoreCompileInputs.cache
+L:\Projects\u8_disasm\u8_lib\bin\Debug\U8Disasm.dll
+L:\Projects\u8_disasm\u8_lib\bin\Debug\U8Disasm.pdb
+L:\Projects\u8_disasm\u8_lib\obj\Debug\U8Disasm.dll
+L:\Projects\u8_disasm\u8_lib\obj\Debug\U8Disasm.pdb
