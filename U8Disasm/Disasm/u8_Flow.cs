@@ -414,7 +414,7 @@ namespace u8_lib.Disasm
                 //    return b;
 
                 // SLICEBLOCK: its okaye, we can make new blocks if this aint the right start point!
-                if (address >= b.Ops[0].address && address <= b.Ops[0].address + 2)
+                if (address == b.Ops[0].address)
                     return b;
             }
 

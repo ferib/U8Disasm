@@ -8,7 +8,7 @@ using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 using System.Windows.Forms;
-using u8_lib.Disasm;
+using U8Disasm.Disasm;
 
 namespace u8_Forum
 {
@@ -56,10 +56,10 @@ namespace u8_Forum
                     foreach (var o in disasm.FlowAnalyses.Blocks[block].Ops)
                     {
                         DataGridViewRow row = (DataGridViewRow)dataGridView1.Rows[0].Clone();
-                        row.Cells[0].Value = o.address.ToString("X4");
-                        row.Cells[1].Value = o.opcode.ToString("X2");
-                        row.Cells[2].Value = o.instr;
-                        row.Cells[3].Value = o.operands;
+                        row.Cells[0].Value = o.Address.ToString("X4");
+                        row.Cells[1].Value = o.Opcode.ToString("X2");
+                        row.Cells[2].Value = o.Instruction;
+                        row.Cells[3].Value = o.Operands;
                         dataGridView1.Rows.Add(row);
                     }
                     DataGridViewRow row2 = (DataGridViewRow)dataGridView1.Rows[0].Clone();

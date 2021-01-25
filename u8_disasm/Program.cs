@@ -5,11 +5,10 @@ using System.Text;
 using System.Threading.Tasks;
 using System.IO;
 using System.Globalization;
-using u8_lib;
-using u8_lib.Disasm;
+using U8Disasm.Disasm;
 using System.Threading;
 
-namespace u8_disasm
+namespace u8_Console
 {
     class Program
     {

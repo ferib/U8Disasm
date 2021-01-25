@@ -6,8 +6,8 @@
     <Platform Condition=" '$(Platform)' == '' ">AnyCPU</Platform>
     <ProjectGuid>{4547FEFF-8176-4E1D-8352-3022212355AF}</ProjectGuid>
     <OutputType>Exe</OutputType>
-    <RootNamespace>u8_disasm</RootNamespace>
-    <AssemblyName>u8_disasm</AssemblyName>
+    <RootNamespace>u8_Console</RootNamespace>
+    <AssemblyName>u8_Console</AssemblyName>
     <TargetFrameworkVersion>v4.7.2</TargetFrameworkVersion>
     <FileAlignment>512</FileAlignment>
     <AutoGenerateBindingRedirects>true</AutoGenerateBindingRedirects>
@@ -50,9 +50,9 @@
     <None Include="App.config" />
   </ItemGroup>
   <ItemGroup>
-    <ProjectReference Include="..\u8_lib\u8_lib.csproj">
+    <ProjectReference Include="..\u8_lib\U8Disasm.csproj">
       <Project>{c56cda59-e07d-4588-86f9-6d1180ae2f64}</Project>
-      <Name>u8_lib</Name>
+      <Name>U8Disasm</Name>
     </ProjectReference>
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />

@@ -3,11 +3,11 @@ Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio Version 16
 VisualStudioVersion = 16.0.30309.148
 MinimumVisualStudioVersion = 10.0.40219.1
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "u8_disasm", "u8_disasm\u8_disasm.csproj", "{4547FEFF-8176-4E1D-8352-3022212355AF}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "u8_Console", "u8_disasm\u8_Console.csproj", "{4547FEFF-8176-4E1D-8352-3022212355AF}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "u8_Forum", "u8_Forum\u8_Forum.csproj", "{F25925AC-83B1-4D31-B6CF-90FB2C3F95CE}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "u8_lib", "u8_lib\u8_lib.csproj", "{C56CDA59-E07D-4588-86F9-6D1180AE2F64}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "U8Disasm", "u8_lib\U8Disasm.csproj", "{C56CDA59-E07D-4588-86F9-6D1180AE2F64}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution

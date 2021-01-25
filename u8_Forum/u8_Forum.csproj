@@ -81,9 +81,9 @@
     <None Include="App.config" />
   </ItemGroup>
   <ItemGroup>
-    <ProjectReference Include="..\u8_lib\u8_lib.csproj">
+    <ProjectReference Include="..\u8_lib\U8Disasm.csproj">
       <Project>{c56cda59-e07d-4588-86f9-6d1180ae2f64}</Project>
-      <Name>u8_lib</Name>
+      <Name>U8Disasm</Name>
     </ProjectReference>
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />

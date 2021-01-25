@@ -7,8 +7,8 @@
     <ProjectGuid>{C56CDA59-E07D-4588-86F9-6D1180AE2F64}</ProjectGuid>
     <OutputType>Library</OutputType>
     <AppDesignerFolder>Properties</AppDesignerFolder>
-    <RootNamespace>u8_lib</RootNamespace>
-    <AssemblyName>u8_lib</AssemblyName>
+    <RootNamespace>U8Disasm</RootNamespace>
+    <AssemblyName>U8Disasm</AssemblyName>
     <TargetFrameworkVersion>v4.7.2</TargetFrameworkVersion>
     <FileAlignment>512</FileAlignment>
     <Deterministic>true</Deterministic>
@@ -41,12 +41,13 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="Disasm\asm_u8.cs" />
-    <Compile Include="Disasm\u8_disas.cs" />
-    <Compile Include="Disasm\u8_Disasm.cs" />
-    <Compile Include="Disasm\u8_Flow.cs" />
-    <Compile Include="Disasm\u8_inst.cs" />
+    <Compile Include="Analyser\U8CodeBlock.cs" />
+    <Compile Include="Disassembler\U8Decoder.cs" />
+    <Compile Include="Disassembler\u8_Disasm.cs" />
+    <Compile Include="Analyser\U8Flow.cs" />
+    <Compile Include="Disassembler\U8Instructions.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
+    <Compile Include="Structs\Main.cs" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
 </Project>
