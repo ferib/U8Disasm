@@ -116,8 +116,8 @@ namespace U8Graph
             //Start to draw
             DrawTarget.BeginDraw();
             DrawTarget.Clear(new RawColor4(0x70, 0x70, 0x70, 255));
-            DrawTarget.DrawText($"U8Disasm {graphX},{graphY}", fontSmall, new RawRectangleF(1, 1, 100, 20), blackBrush);
-            DrawTarget.DrawLine(new RawVector2(1, 18), new RawVector2(65, 18), blackBrush);
+            DrawTarget.DrawText($"U8Disasm ({graphX},{graphY})", fontSmall, new RawRectangleF(1, 1, 150, 20), blackBrush);
+            DrawTarget.DrawLine(new RawVector2(1, 18), new RawVector2(150, 18), blackBrush);
 
             // draw stuff
             //foreach(var sub in flow.Stubs)
@@ -152,6 +152,12 @@ namespace U8Graph
                 blockInnerStr += data + "\n";
             }
 
+            // rebase
+            box.Left -= graphX;
+            box.Right -= graphX;
+            box.Top -= graphY;
+            box.Bottom -= graphY;
+
             DrawTarget.DrawLine(new RawVector2(box.Left-2, box.Top), new RawVector2(box.Right+1, box.Top), blackBrush);         // ----
             DrawTarget.DrawLine(new RawVector2(box.Left-2, box.Top), new RawVector2(box.Left-2, box.Bottom), blackBrush);       // |
             DrawTarget.DrawLine(new RawVector2(box.Right+1, box.Top), new RawVector2(box.Right+1, box.Bottom), blackBrush);     //      |
@@ -165,8 +171,8 @@ namespace U8Graph
             if (!mouseDown)
                 return;
 
-            graphX += (e.X - LastDownX);
-            graphY += (e.Y - LastDownY);
+            graphX += (LastDownX - e.X);
+            graphY += (LastDownY - e.Y);
             // do math and save
             LastDownX = e.X; 
             LastDownY = e.Y;
