@@ -82,8 +82,8 @@
     <None Include="App.config" />
   </ItemGroup>
   <ItemGroup>
-    <ProjectReference Include="..\u8_lib\U8Disasm.csproj">
-      <Project>{c56cda59-e07d-4588-86f9-6d1180ae2f64}</Project>
+    <ProjectReference Include="..\..\src\U8Disasm.csproj">
+      <Project>{a883c5b5-5246-4276-9752-1ed65415c487}</Project>
       <Name>U8Disasm</Name>
     </ProjectReference>
   </ItemGroup>
