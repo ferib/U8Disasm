@@ -13,20 +13,20 @@ namespace U8Disasm.Analyser
         // generate code blocks
         public List<U8CodeBlock> Blocks; 
         public List<List<int>> Stubs; // functions (stubs with no parents)
-        private u8_Disasm Disasm;
+        public byte[] Memory;
 
-        public U8Flow(u8_Disasm disasm)
+        public U8Flow(byte[] memory)
         {
             this.Blocks = new List<U8CodeBlock>();
             this.Stubs = new List<List<int>>();
-            this.Disasm = disasm;
+            this.Memory = memory;
             //if (!Analyse())
             //    Console.WriteLine("Err, Flow Analysis failed OwO");
         }
 
         public bool Analyse()
         {
-            if (this.Disasm.Buffer == null || this.Disasm.Buffer.Length == 0)
+            if (this.Memory == null || this.Memory.Length == 0)
                 return false;
 
             // Get blocks
@@ -34,96 +34,6 @@ namespace U8Disasm.Analyser
 
             // analyse block to get stubs
             GetStubs();
-
-            return true;
-        }
-
-        private bool GetBlocks_OLD()
-        {
-            this.Blocks.Clear();
-
-            // Split all blocks based on branch conditions and terminate by return
-            // basically just check for anything thats capable of modifying the Instruction Pointer
-
-            // ALL Conditional relative branch instructions:
-            int ret = 2;
-            int AddrBlockStart = 0;
-            List<U8Cmd> Cmds = new List<U8Cmd>();
-            //for (int i = 0; i < this.Disasm.Buffer.Length-6; i+= ret)
-            for (int i = 0; i < 0x1000-6; i+= ret) // dont kill the CPU
-            {
-                var newBlock = new U8CodeBlock(null);
-                bool isEndOfBlock = false;
-
-                // should fix end of array???
-                int grabSize = 6;
-                if ((i + grabSize) - this.Disasm.Buffer.Length > 0)
-                    grabSize = (i + grabSize) - this.Disasm.Buffer.Length;
-                byte[] buf = new byte[grabSize]; // FIX End of array error?
-
-                // fill temp buff
-                for (int b = 0; b < buf.Length; b++)
-                    buf[b] = this.Disasm.Buffer[i + b];
-
-                // get opcode
-                U8Cmd opcode = new U8Cmd();
-                ret = U8Decoder.DecodeOpcode(buf, ref opcode);
-                opcode.Address = i;// dafuq???
-                Cmds.Add(opcode);
-
-                // check branches
-                switch (opcode.Type)
-                {
-                    case U8Decoder.U8_BGE_RAD: // conditional branch
-                    case U8Decoder.U8_BLT_RAD:
-                    case U8Decoder.U8_BGT_RAD:
-                    case U8Decoder.U8_BLE_RAD:
-                    case U8Decoder.U8_BGES_RAD:
-                    case U8Decoder.U8_BLTS_RAD:
-                    case U8Decoder.U8_BGTS_RAD:
-                    case U8Decoder.U8_BLES_RAD:
-                    case U8Decoder.U8_BNE_RAD:
-                    case U8Decoder.U8_BEQ_RAD:
-                    case U8Decoder.U8_BNV_RAD:
-                    case U8Decoder.U8_BOV_RAD:
-                    case U8Decoder.U8_BPS_RAD:
-                    case U8Decoder.U8_BNS_RAD:
-                    case U8Decoder.U8_BAL_RAD:
-                        // if cond ? radr : PC+=2
-                        // if op1 < 0 then negative else positive;
-                        // conditions? dont care actually ;D
-                        newBlock.JumpsToBlock = opcode.Address + opcode.Op1; // jumps to
-                        newBlock.NextBlock = opcode.Address += 2; // skips jumps
-                        isEndOfBlock = true;
-                        break;
-                    case U8Decoder.U8_B_AD: // branch
-                    case U8Decoder.U8_BL_AD:
-                        // PC = cadr[15:0] (op1) + second word
-                        newBlock.JumpsToBlock = (opcode.Op1*0x10000) + opcode.sWord; // segment + word??
-                        isEndOfBlock = true;
-                        break;
-                    case U8Decoder.U8_B_ER:
-                    case U8Decoder.U8_BL_ER:
-                        // jumps to er{op1} - eeeh, idk what that is yet >.<
-                        isEndOfBlock = true;
-                        break;
-                    case U8Decoder.U8_RT: // return from subroutine?
-                        isEndOfBlock = true;
-                        break;
-                    default:
-                        break;
-                }
-
-                if(isEndOfBlock)
-                {
-                    // save block
-                    newBlock.Ops = Cmds.ToArray();
-                    newBlock.Address = newBlock.Ops[0].Address;
-                    this.Blocks.Add(newBlock);
-                    AddrBlockStart = i; // set for next
-                    Cmds.Clear();
-                }
-            }
 
             return true;
         }
@@ -143,7 +53,7 @@ namespace U8Disasm.Analyser
             var newBlock = new U8CodeBlock(null);
             // change to while;true loop?
             //for (int i = 0; i < this.Disasm.Buffer.Length-6; i+= ret)
-            for (int i = 0x01000; i < this.Disasm.Buffer.Length - 6; i += ret) // dont kill the CPU
+            for (int i = 0x01000; i < this.Memory.Length - 6; i += ret) // dont kill the CPU
             {
                 U8Cmd cmd = new U8Cmd();
                 ret = GetBlock(i, ref cmd, ref newBlock, ref isEndOfBlock);
@@ -175,7 +85,7 @@ namespace U8Disasm.Analyser
             
             byte[] buf = new byte[6];
 
-            if (Address + 6 > this.Disasm.Buffer.Length)
+            if (Address + 6 > this.Memory.Length)
             {
                 isEndOfBlock = true; // wont come back again
                 return - 1; // Cia Adios
@@ -183,7 +93,7 @@ namespace U8Disasm.Analyser
 
             // fill temp buff
             for (int b = 0; b < buf.Length; b++)
-                buf[b] = this.Disasm.Buffer[Address + b];
+                buf[b] = this.Memory[Address + b];
 
             // get opcode
             //u8_cmd opcode = new u8_cmd();

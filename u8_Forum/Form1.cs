@@ -4,25 +4,25 @@ using System.ComponentModel;
 using System.Data;
 using System.Drawing;
 using System.Linq;
+using System.IO;
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 using System.Windows.Forms;
-using U8Disasm.Disasm;
+using U8Disasm.Disassembler;
+using U8Disasm.Analyser;
 
 namespace u8_Forum
 {
     public partial class Form1 : Form
     {
-        public static u8_Disasm disasm;
+        public static U8Flow FlowAnalyser;
         public static Thread worker;
         private int CachedSubCount = 0;
 
         public Form1()
         {
             InitializeComponent();
-
-            u8_Disasm disasm;
 
             timer1.Enabled = true;
 
@@ -32,8 +32,8 @@ namespace u8_Forum
             
             void doTask(object x)
             {
-                Form1.disasm = new u8_Disasm(@"L:\Projects\Calculator\Casio\ROM_Dump.mem");
-                Form1.disasm.FlowAnalyses.Analyse();
+                Form1.FlowAnalyser = new U8Flow(File.ReadAllBytes(@"L:\Projects\Calculator\Casio\ROM_Dump.mem"));
+                Form1.FlowAnalyser.Analyse();
                 //updateSubsView();
             }
 
@@ -42,18 +42,18 @@ namespace u8_Forum
         private void lstSubs_SelectedIndexChanged(object sender, EventArgs e)
         {
             dataGridView1.Rows.Clear();
-            lock (disasm.FlowAnalyses.Stubs)
+            lock (FlowAnalyser.Stubs)
             {
-                if (disasm.FlowAnalyses.Stubs.Count-1 < lstSubs.SelectedIndex)
+                if (FlowAnalyser.Stubs.Count-1 < lstSubs.SelectedIndex)
                     return;
 
-                var sub = disasm.FlowAnalyses.Stubs[lstSubs.SelectedIndex];
+                var sub = FlowAnalyser.Stubs[lstSubs.SelectedIndex];
                 foreach (var block in sub)
                 {
-                    if (disasm.FlowAnalyses.Blocks[block] == null)
+                    if (FlowAnalyser.Blocks[block] == null)
                         continue;
 
-                    foreach (var o in disasm.FlowAnalyses.Blocks[block].Ops)
+                    foreach (var o in FlowAnalyser.Blocks[block].Ops)
                     {
                         DataGridViewRow row = (DataGridViewRow)dataGridView1.Rows[0].Clone();
                         row.Cells[0].Value = o.Address.ToString("X4");
@@ -74,19 +74,19 @@ namespace u8_Forum
 
         private void updateSubsView()
         {
-            if (disasm == null || disasm.FlowAnalyses == null || disasm.FlowAnalyses.Stubs == null)
+            if (FlowAnalyser == null || FlowAnalyser == null || FlowAnalyser.Stubs == null)
                 return;
 
-            lock(disasm.FlowAnalyses.Stubs)
+            lock(FlowAnalyser.Stubs)
             {
-                if (CachedSubCount == disasm.FlowAnalyses.Stubs.Count)
+                if (CachedSubCount == FlowAnalyser.Stubs.Count)
                     return;
 
                 lstSubs.Items.Clear();
-                foreach (var x in disasm.FlowAnalyses.Stubs)
-                    lstSubs.Items.Add("sub_" + disasm.FlowAnalyses.Blocks[x[0]].Address.ToString("X8"));
-                lblInfo.Text = $"Subs Count: {disasm.FlowAnalyses.Stubs.Count}\nByte Count: {disasm.Buffer.Length}";
-                CachedSubCount = disasm.FlowAnalyses.Stubs.Count;
+                foreach (var x in FlowAnalyser.Stubs)
+                    lstSubs.Items.Add("sub_" + FlowAnalyser.Blocks[x[0]].Address.ToString("X8"));
+                lblInfo.Text = $"Subs Count: {FlowAnalyser.Stubs.Count}\nByte Count: {FlowAnalyser.Memory.Length}";
+                CachedSubCount = FlowAnalyser.Stubs.Count;
             }
 
 

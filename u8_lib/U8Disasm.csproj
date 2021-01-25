@@ -43,7 +43,6 @@
   <ItemGroup>
     <Compile Include="Analyser\U8CodeBlock.cs" />
     <Compile Include="Disassembler\U8Decoder.cs" />
-    <Compile Include="Disassembler\u8_Disasm.cs" />
     <Compile Include="Analyser\U8Flow.cs" />
     <Compile Include="Disassembler\U8Instructions.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />

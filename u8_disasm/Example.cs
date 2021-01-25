@@ -1,13 +1,16 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Linq;
+using System.Text;
+using System.Threading.Tasks;
 using System.IO;
-using U8Disasm.Analyser;
 using U8Disasm.Structs;
+using U8Disasm.Disassembler;
+using U8Disasm.Analyser;
 
-namespace U8Disasm.Disassembler
+namespace u8_Console
 {
-    // TODO: Remove this to an Example?
-    public class u8_Disasm
+    public class Example
     {
         public string FilePath;
         public byte[] Buffer;
@@ -18,7 +21,7 @@ namespace U8Disasm.Disassembler
 
         public int Index; // current RIP-ish
 
-        public u8_Disasm(string Path)
+        public Example(string Path)
         {
             if (!File.Exists(Path))
                 return;
@@ -26,7 +29,7 @@ namespace U8Disasm.Disassembler
             this.Buffer = File.ReadAllBytes(this.FilePath);
             this.CachedDisassembly = new Dictionary<int, string>();
             this.Index = 0;
-            this.FlowAnalyses = new U8Flow(this);
+            this.FlowAnalyses = new U8Flow(this.Buffer);
         }
 
         private void _CacheDisassembly(int i, string Str)
