@@ -1,4 +1,5 @@
-﻿using U8Disasm.Structs;
+﻿#if DEBUG
+using U8Disasm.Structs;
 
 namespace U8Disasm.Analyser
 {
@@ -27,3 +28,4 @@ namespace U8Disasm.Analyser
     }
 
 }
+#endif
