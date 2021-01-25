@@ -9,6 +9,14 @@
     <RepositoryUrl>https://github.com/ferib/U8Disasm</RepositoryUrl>
     <Company>ferib.dev</Company>
     <PackageTags>nX-U8/100, U8, Assembly, Disassembler, Reverse Engineering</PackageTags>
+    <PackageIcon>nxu8_logo.png</PackageIcon>
   </PropertyGroup>
+
+  <ItemGroup>
+    <None Include="C:\Users\Ferib\Pictures\memes\nxu8_logo.png">
+      <Pack>True</Pack>
+      <PackagePath></PackagePath>
+    </None>
+  </ItemGroup>
 
 </Project>
