@@ -130,8 +130,8 @@ namespace U8Disasm.Analyser
                 case U8Decoder.U8_B_AD: // branch
                 case U8Decoder.U8_BL_AD:
                     // PC = cadr[15:0] (op1) + second word
-                    newBlock.JumpsToBlock = (Cmd.Op1 * 0x10000) + Cmd.sWord; // takes jump
-                    newBlock.NextBlock = -1; // newBlock.JumpsToBlock; // dont set so we know its forced?
+                    newBlock.NextBlock = (Cmd.Op1 * 0x10000) + Cmd.sWord; // takes jump
+                    newBlock.JumpsToBlock = -1; // newBlock.JumpsToBlock; // dont set so we know its forced?
                     isEndOfBlock = true;
                     break;
                 case U8Decoder.U8_B_ER:
