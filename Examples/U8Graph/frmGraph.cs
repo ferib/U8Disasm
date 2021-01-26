@@ -31,6 +31,7 @@ namespace U8Graph
         private Brush blueBrush;
         private Brush blue2Brush;
         private Brush blackBrush;
+        private Brush backgroundBrush;
         private TextFormat fontFat;
         private TextFormat fontBig;
         private TextFormat font;
@@ -48,12 +49,7 @@ namespace U8Graph
         private int DownClickY;
         private int BlockHeights = 0;
 
-        private RawVector2? PreviousBlock;
-        private U8CodeBlock PreviousBlockInfo;
-
-        private Dictionary<int, RawVector2> RArrows = new Dictionary<int, RawVector2>();
-        private Dictionary<int, RawVector2> GArrows = new Dictionary<int, RawVector2>();
-        private Dictionary<int, RawVector2> BArrows = new Dictionary<int, RawVector2>();
+        private List<GraphArrow> Arrows = new List<GraphArrow>();
 
         public class U8CodeBlockVisual : U8CodeBlock
         {
@@ -112,6 +108,14 @@ namespace U8Graph
             }
         }
 
+        public class GraphArrow
+        {
+            public int Start;
+            public int End;
+            public RawVector2 Start2D;
+            public RawVector2 End2D;
+            public Brush Brush;
+        }
 
         public frmGraph()
         {
@@ -145,6 +149,25 @@ namespace U8Graph
             blueBrush = new SharpDX.Direct2D1.SolidColorBrush(DrawTarget, new RawColor4(0x77, 0x9E, 0xCB, 0xFF));
             blue2Brush = new SharpDX.Direct2D1.SolidColorBrush(DrawTarget, new RawColor4(0, 0, 255, 255));
             blackBrush = new SharpDX.Direct2D1.SolidColorBrush(DrawTarget, new RawColor4(0x00, 0x00, 0x00, 0xFF));
+
+            backgroundBrush = new SharpDX.Direct2D1.LinearGradientBrush(DrawTarget, new LinearGradientBrushProperties()
+            {
+                StartPoint = new RawVector2(0, (int)(this.Height * 0.2)),
+                EndPoint = new RawVector2(0, this.Height),
+            },
+            new SharpDX.Direct2D1.GradientStopCollection(DrawTarget, new SharpDX.Direct2D1.GradientStop[]
+            {
+                new GradientStop()
+                {
+                    Color = new RawColor4(0xFF, 0xFF, 0xFF, 0xFF),
+                    Position = 0,
+                },
+                new GradientStop()
+                {
+                    Color = new RawColor4(140, 200, 00, 10), //E0F8FF
+                    Position = 1,
+                }
+            }));
 
             //create textformat
             fontFat = new SharpDX.DirectWrite.TextFormat(factoryWrite, "Consolas", 36);
@@ -188,6 +211,7 @@ namespace U8Graph
             //Start to draw
             DrawTarget.BeginDraw();
             DrawTarget.Clear(new RawColor4(0x70, 0x70, 0x70, 255));
+            DrawTarget.FillRectangle(new RawRectangleF(0, 0, this.Width, this.Height), backgroundBrush);
             DrawTarget.DrawText($"U8Disasm ({graphX},{graphY})", fontSmall, new RawRectangleF(1, 1, 150, 20), blackBrush);
             DrawTarget.DrawLine(new RawVector2(1, 18), new RawVector2(150, 18), blackBrush);
 
@@ -196,25 +220,19 @@ namespace U8Graph
                 DrawTarget.DrawLine(new RawVector2(DownClickX, DownClickY), new RawVector2(LastDownX, LastDownY), redBrush);
 
             // draw blocks
-            int target = 0;
+            int target = 10;
             if (flow != null && flow.Stubs != null && flow.Stubs.Count > target)
             {
                 DrawTarget.DrawText($"[{flow.Stubs[target].Count}]", fontSmall, new RawRectangleF(1, 21, 150, 20), blackBrush);
                 BlockHeights = 0;
-                PreviousBlock = null;
                 foreach (var i in flow.Stubs[target])
                 {
                     DrawBlock(flow.Blocks[i]);
                 }
-                RArrows.Clear();
-                GArrows.Clear();
-                BArrows.Clear();
+                Arrows.Clear();
             }
-                
-
             DrawTarget.EndDraw();
         }
-
 
         private void DrawBlock(U8CodeBlock block)
         {
@@ -250,71 +268,62 @@ namespace U8Graph
             // keep track of current block height
             BlockHeights += (int)(box.Bottom - box.Top) + 20;
 
-            // check for incomming arrow
-            //if (PreviousBlock.HasValue)
-            //{
-            //    if(PreviousBlockInfo.NextBlock != -1)
-            //        DrawTarget.DrawLine(PreviousBlock.Value, new RawVector2(((box.Left + box.Right+3) / 2), box.Top), redBrush);
-
-            //    if (PreviousBlockInfo.JumpsToBlock != -1)
-            //        DrawTarget.DrawLine(PreviousBlock.Value, new RawVector2(((box.Left + box.Right - 3) / 2), box.Top), blue2Brush);
-
-            //    PreviousBlock = null; // reset
-            //}
-
             // add arrow dict with block offsets if needed
             var thicc = (box.Left - box.Right) / 2;
             if (block.JumpsToBlock == -1 && block.NextBlock != -1)
             {
-                BArrows.Add(block.NextBlock, new RawVector2(((box.Left + box.Right) / 2), box.Bottom)); //blue, only one jump
+                //BArrows.Add(block.NextBlock, new RawVector2(((box.Left + box.Right) / 2), box.Bottom)); //blue, only one jump
+                Arrows.Add(new GraphArrow()
+                {
+                    Brush = blue2Brush,
+                    Start2D = new RawVector2(((box.Left + box.Right) / 2), box.Bottom),
+                    Start = block.Address,
+                    End = block.NextBlock
+                });
             } 
             else if (block.NextBlock != -1)
             {
                 box.Left += thicc;
                 box.Right += thicc;
-                RArrows.Add(block.NextBlock, new RawVector2(((box.Left + box.Right) / 2), box.Bottom)); // red, jump failed but not only one
+                //RArrows.Add(block.NextBlock, new RawVector2(((box.Left + box.Right) / 2), box.Bottom)); // red, jump failed but not only one
+                Arrows.Add(new GraphArrow()
+                {
+                    Brush = redBrush,
+                    Start2D = new RawVector2(((box.Left + box.Right) / 2), box.Bottom),
+                    Start = block.Address,
+                    End = block.NextBlock
+                });
             }
-                
-
             if (block.JumpsToBlock != -1)
             {
                 box.Left += thicc;
                 box.Right += thicc;
-                GArrows.Add(block.JumpsToBlock, new RawVector2(((box.Left + box.Right) / 2), box.Bottom)); // green, jump OK
+                //GArrows.Add(block.JumpsToBlock, new RawVector2(((box.Left + box.Right) / 2), box.Bottom)); // green, jump OK
+                Arrows.Add(new GraphArrow()
+                {
+                    Brush = greenBrush,
+                    Start2D = new RawVector2(((box.Left + box.Right) / 2), box.Bottom),
+                    Start = block.Address,
+                    End = block.JumpsToBlock
+                });
             }
-                
 
-
+            DrawTarget.FillRectangle(box, whiteBrush);
             DrawTarget.DrawLine(new RawVector2(box.Left-2, box.Top), new RawVector2(box.Right+1, box.Top), blackBrush);         // ----
             DrawTarget.DrawLine(new RawVector2(box.Left-2, box.Top), new RawVector2(box.Left-2, box.Bottom), blackBrush);       // |
             DrawTarget.DrawLine(new RawVector2(box.Right+1, box.Top), new RawVector2(box.Right+1, box.Bottom), blackBrush);     //      |
             DrawTarget.DrawLine(new RawVector2(box.Left-2, box.Bottom), new RawVector2(box.Right+1, box.Bottom), blackBrush);   // _____
             DrawTarget.DrawText(blockInnerStr, fontSmall, box, blackBrush);
 
+            // TODO: Make arrow classes cuz they under rated af
+
             // check for incomming jumps
-            if(BArrows.ContainsKey(block.Address))
+            var recevs = Arrows.FindAll(x => x.End == block.Address);
+            foreach(var ar in recevs)
             {
-                DrawTarget.DrawLine(BArrows[block.Address], new RawVector2(((box.Left + box.Right - 3) / 2), box.Top), blue2Brush);
-                BArrows.Remove(block.Address);
+                ar.End2D = new RawVector2(((box.Left + box.Right) / 2), box.Top); // fix End2D
+                DrawTarget.DrawLine(ar.Start2D, ar.End2D, ar.Brush);
             }
-            if (GArrows.ContainsKey(block.Address))
-            {
-                DrawTarget.DrawLine(GArrows[block.Address], new RawVector2(((box.Left + box.Right - 3) / 2), box.Top), greenBrush);
-                GArrows.Remove(block.Address);
-            }
-            if (RArrows.ContainsKey(block.Address))
-            {
-                DrawTarget.DrawLine(RArrows[block.Address], new RawVector2(((box.Left + box.Right - 3) / 2), box.Top), redBrush);
-                RArrows.Remove(block.Address);
-            }
-
-
-            // set arrow start point
-            //if (block.JumpsToBlock != -1 || block.NextBlock != -1)
-            //{
-            //    PreviousBlockInfo = block;
-            //    PreviousBlock = new RawVector2(((box.Left + box.Right) / 2), box.Bottom);
-            //}
         }
 
         private void frmGraph_MouseMove(object sender, MouseEventArgs e)
@@ -322,8 +331,8 @@ namespace U8Graph
             if (!mouseDown)
                 return;
 
-            graphX += (LastDownX - e.X);
-            graphY += (LastDownY - e.Y);
+            graphX += (int)((LastDownX - e.X) * 1.5);
+            graphY += (int)((LastDownY - e.Y) * 1.5);
             // do math and save
             LastDownX = e.X; 
             LastDownY = e.Y;
