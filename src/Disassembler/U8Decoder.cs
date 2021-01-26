@@ -828,10 +828,10 @@ namespace U8Disasm.Disassembler
                 case U8_BAL_RAD:
                     // handle +ive or -ive address jump cases
                     if ((byte)Op1 < 0)
-                        Cmd.Operands = $"-{Math.Abs(0 - (byte)Op1)}h";
+                        Cmd.Operands = $"-{Math.Abs(0 - (byte)Op1).ToString("X")}h";
                     //fmt_op_str("-%02xh", abs(0 - (st8)op1));
                     else
-                        Cmd.Operands = $"+{Math.Abs(0 - (byte)Op1)}h";
+                        Cmd.Operands = $"+{Math.Abs(0 - (byte)Op1).ToString("X")}h";
                     //fmt_op_str("+%02xh", (st8)op1);
                     break;
 
