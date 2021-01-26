@@ -35,10 +35,11 @@
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
             this.AutoSizeMode = System.Windows.Forms.AutoSizeMode.GrowAndShrink;
-            this.ClientSize = new System.Drawing.Size(584, 361);
+            this.ClientSize = new System.Drawing.Size(718, 508);
             this.Name = "frmGraph";
             this.SizeGripStyle = System.Windows.Forms.SizeGripStyle.Show;
             this.Text = "Graph View";
+            this.Scroll += new System.Windows.Forms.ScrollEventHandler(this.frmGraph_Scroll);
             this.MouseDown += new System.Windows.Forms.MouseEventHandler(this.frmGraph_MouseDown);
             this.MouseMove += new System.Windows.Forms.MouseEventHandler(this.frmGraph_MouseMove);
             this.MouseUp += new System.Windows.Forms.MouseEventHandler(this.frmGraph_MouseUp);
