@@ -48,33 +48,18 @@ namespace U8Graph
         private int DownClickX;
         private int DownClickY;
         private int BlockHeights = 0;
+        private int BlockHOffset = 0;
 
         private List<GraphArrow> Arrows = new List<GraphArrow>();
 
-        public class U8CodeBlockVisual : U8CodeBlock
+        public class U8CodeBlockVisual
         {
             public RawRectangleF BoundryBox;
-            private int GraphX;
-            private int GraphY;
-            private WindowRenderTarget DrawTarget;
+            private U8CodeBlock Block;
 
-            public U8CodeBlockVisual(U8Cmd[] Ops, ref int graphX, ref int graphY) : base (Ops)
+            public U8CodeBlockVisual(U8CodeBlock block)
             {
-                this.GraphX = graphX;
-                this.GraphY = graphY;
-            }
-
-            public U8CodeBlockVisual(ref U8CodeBlock b) : base(b.Ops)
-            {
-                this.BoundryBox = new RawRectangleF();
-            }
-
-            public void ApplyGraphOffsets()
-            {
-                BoundryBox.Left -= GraphX;
-                BoundryBox.Right -= GraphX;
-                BoundryBox.Top -= GraphY;
-                BoundryBox.Bottom -= GraphY;
+                this.Block = block;
             }
 
             public void ApplyGraphOffsets(int x, int y)
@@ -115,6 +100,21 @@ namespace U8Graph
             public RawVector2 Start2D;
             public RawVector2 End2D;
             public Brush Brush;
+
+            public int StartPixelOffsetH; // shift blocks left/right for arrow lines
+            public int EndPixelOffsetH; 
+
+            public GraphArrow()
+            {
+
+            }
+
+            public List<RawVector2> CalculatePath()
+            {
+                // TODO: add caching
+                // TODO: implement
+                return null;
+            }
         }
 
         public frmGraph()
@@ -220,11 +220,12 @@ namespace U8Graph
                 DrawTarget.DrawLine(new RawVector2(DownClickX, DownClickY), new RawVector2(LastDownX, LastDownY), redBrush);
 
             // draw blocks
-            int target = 10;
+            int target = 0;
             if (flow != null && flow.Stubs != null && flow.Stubs.Count > target)
             {
                 DrawTarget.DrawText($"[{flow.Stubs[target].Count}]", fontSmall, new RawRectangleF(1, 21, 150, 20), blackBrush);
                 BlockHeights = 0;
+                BlockHOffset = 0;
                 foreach (var i in flow.Stubs[target])
                 {
                     DrawBlock(flow.Blocks[i]);
@@ -236,6 +237,7 @@ namespace U8Graph
 
         private void DrawBlock(U8CodeBlock block)
         {
+            // TODO: implement objects instead of this mess
             // TODO: dont render all blocks
             RawRectangleF box = new RawRectangleF();
             box.Left = this.Width / 2; // start center?
@@ -269,7 +271,7 @@ namespace U8Graph
             BlockHeights += (int)(box.Bottom - box.Top) + 20;
 
             // add arrow dict with block offsets if needed
-            var thicc = (box.Left - box.Right) / 2;
+            var thicc = (box.Right - box.Left) /2;
             if (block.JumpsToBlock == -1 && block.NextBlock != -1)
             {
                 //BArrows.Add(block.NextBlock, new RawVector2(((box.Left + box.Right) / 2), box.Bottom)); //blue, only one jump
@@ -296,8 +298,8 @@ namespace U8Graph
             }
             if (block.JumpsToBlock != -1)
             {
-                box.Left += thicc;
-                box.Right += thicc;
+                //box.Left += thicc;
+                //box.Right += thicc;
                 //GArrows.Add(block.JumpsToBlock, new RawVector2(((box.Left + box.Right) / 2), box.Bottom)); // green, jump OK
                 Arrows.Add(new GraphArrow()
                 {
@@ -321,6 +323,8 @@ namespace U8Graph
             var recevs = Arrows.FindAll(x => x.End == block.Address);
             foreach(var ar in recevs)
             {
+                //box.Left += thicc;
+                //box.Right += thicc;
                 ar.End2D = new RawVector2(((box.Left + box.Right) / 2), box.Top); // fix End2D
                 DrawTarget.DrawLine(ar.Start2D, ar.End2D, ar.Brush);
             }
