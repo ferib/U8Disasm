@@ -62,7 +62,6 @@ namespace U8Graph
             Bottom
         }
 
-
         // class to keep track of all visual information about a block
         public class GraphBlock
         {
@@ -537,13 +536,15 @@ namespace U8Graph
         {
             GBlocks = new List<GraphBlock>();
             int count = 0;
+            GraphBlock.BlocksHeightOffset = 0;
             foreach (var b in flow.Stubs[target])
             {
                 count++;
                 GBlocks.Add(new GraphBlock(flow.Blocks[b], this.Width, this.Height));
-                if (count > 19990)
+                if (count > 15680)
                     break;
             }
+            GraphBlock.BlocksHeightOffset /= 2; // TODO: find out why its multiplied by two 
         }
 
         private void CreateArrows()
