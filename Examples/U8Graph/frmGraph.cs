@@ -51,6 +51,14 @@ namespace U8Graph
         private List<GraphArrow> GArrows;
         private List<GraphBlock> GBlocks;
 
+        public enum BlockColider
+        {
+            None = 0,
+            Left,
+            Top,
+            Right,
+            Bottom
+        }
         // class to keep track of all visual information about a block
         public class GraphBlock
         {
@@ -64,6 +72,11 @@ namespace U8Graph
             private int LastGraphY;
 
             public static int BlocksHeightOffset = 0;
+
+            public GraphBlock()
+            {
+
+            }
 
             public GraphBlock(U8CodeBlock block, int frmWidth, int frmHeight, int graphX = 0, int graphY = 0)
             {
@@ -130,37 +143,79 @@ namespace U8Graph
                 BoundryBox.Bottom += GraphBlock.BlocksHeightOffset;
             }
 
+            public BlockColider CheckCollision(RawVector2 start, RawVector2 end)
+            {
+                //  4   sY
+                //  3    |
+                //  2   dY---------ds1
+                //  1     _______  |
+                //  0 ---|-------|-|------------------ 
+                // -1    |b 0xB00| |
+                // -2    |_______| sX---------dX
+                // -3        |
+                // -4        |
+                //  * -4 -3 -2 -1  0  1  2  3  4
+                //     sX     |                                   eX
+                // this is such brainfuck.. Think you can do better? Be my guest!
+
+
+                if (start.Y < BoundryBox.Top && BoundryBox.Top < end.Y && CollidesHorizontal()) // collision Top   
+                    return BlockColider.Top;
+                else if (start.Y > BoundryBox.Bottom && BoundryBox.Bottom > end.Y && CollidesHorizontal()) // collides Bottom
+                    return BlockColider.Bottom;
+                else if (start.X > BoundryBox.Left && BoundryBox.Left > start.X && CollidesVertical()) // collides Left
+                    return BlockColider.Left;
+                else if (start.X < BoundryBox.Right && BoundryBox.Right < end.X && CollidesVertical()) // collides Right
+                    return BlockColider.Right;
+
+                return BlockColider.None;
+
+                bool CollidesHorizontal()
+                {
+                    //return true;
+                    return BoundryBox.Right > end.X && BoundryBox.Left < end.X;
+                    //return (start.X < BoundryBox.Right && BoundryBox.Right < end.X || start.X > BoundryBox.Left && BoundryBox.Left > end.X);
+                }
+
+                bool CollidesVertical()
+                {
+                    //return true;
+                    return BoundryBox.Top > end.Y && BoundryBox.Bottom < end.Y;
+                    //return (start.Y < BoundryBox.Top && BoundryBox.Top < end.Y || start.Y > BoundryBox.Bottom && BoundryBox.Bottom > end.Y); 
+                }
+            }
+
             public int GetBlockHeightOffset()
             {
-                return (int)(BoundryBox.Bottom - BoundryBox.Top) + 40;
+                return (int)(this.BoundryBox.Bottom - this.BoundryBox.Top) + 40;
             }
 
             public RawVector2 GetTopCenter()
             {
-                return new RawVector2(((BoundryBox.Left + BoundryBox.Right) / 2), BoundryBox.Top);
+                return new RawVector2(this.BoundryBox.Left + (GetBlockWidth() / 2), this.BoundryBox.Top);
             }
 
             public RawVector2 GetBottomCenter()
             {
-                return new RawVector2(((BoundryBox.Left + BoundryBox.Right) / 2), BoundryBox.Bottom);
+                return new RawVector2(this.BoundryBox.Left + (GetBlockWidth() / 2), this.BoundryBox.Bottom);
             }
 
             public int GetBlockHeight()
             {
-                int sum = (int)(BoundryBox.Top - BoundryBox.Bottom);
+                int sum = (int)(this.BoundryBox.Top - this.BoundryBox.Bottom);
                 if (sum >= 0)
                     return sum;
                 else
-                    return (int)(BoundryBox.Bottom - BoundryBox.Top);
+                    return (int)(this.BoundryBox.Bottom - this.BoundryBox.Top);
             }
 
             public int GetBlockWidth()
             {
-                int sum = (int)(BoundryBox.Left - BoundryBox.Right);
+                int sum = (int)(this.BoundryBox.Left - this.BoundryBox.Right);
                 if (sum >= 0)
                     return sum;
                 else
-                    return (int)(BoundryBox.Right - BoundryBox.Left);
+                    return (int)(this.BoundryBox.Right - this.BoundryBox.Left);
             }
         }
 
@@ -192,11 +247,12 @@ namespace U8Graph
                 LastGraphX = x;
                 LastGraphY = y;
             }
+
             private RawVector2 ApplyGraphOffsets(RawVector2 vec)
             {
                 // save last
                 vec.X -= LastGraphX;
-                vec.X -= LastGraphY;
+                vec.Y -= LastGraphY;
                 return vec;
             }
 
@@ -210,22 +266,137 @@ namespace U8Graph
                 int startIndex = this.GBlocks.IndexOf(this.GBlocks.Find(x => x.Block.Address == this.Start));
                 int endIndex = this.GBlocks.IndexOf(this.GBlocks.Find(x => x.Block.Address == this.End));
 
-
                 if (startIndex < 0 || endIndex < 0 ||  this.GBlocks.Count <= startIndex || this.GBlocks.Count <= endIndex )
                     return result;
 
                 // TODO: add caching
                 // TODO: implement
 
-                // just basic test ray
-                result.Add(GBlocks[startIndex].GetBottomCenter());
-                result.Add(GBlocks[endIndex].GetTopCenter());
+                // start from bottom
+                var source = GBlocks[startIndex].GetBottomCenter();
+                var destination = GBlocks[endIndex].GetTopCenter();
 
-                // graph
-                for(int i = 0; i < result.Count; i++)
-                    result[i] = ApplyGraphOffsets(result[i]);
+                // add small up/down stub at Start
+                var sourceStart = new RawVector2(source.X, source.Y);
+                if (destination.Y > source.Y)
+                    sourceStart.Y += 7;
+                else 
+                    sourceStart.Y -= 7;
+                result.Add(source);
+                result.Add(sourceStart);
+
+                // add small up/down stub at End
+                var destinationPreEnd = new RawVector2(destination.X, destination.Y);
+                if (source.Y > destination.Y)
+                    destinationPreEnd.Y += 7;
+                else
+                    destinationPreEnd.Y -= 7;
+
+
+                // go to left/right
+                int MinLeft = (int)sourceStart.X;
+                int MaxRight = (int)sourceStart.X;
+
+                // scan range, select all located in between the start and end block
+                for(int i = 0; i < GBlocks.Count; i++)
+                {
+                    if(GBlocks[i].BoundryBox.Top > source.Y && GBlocks[i].BoundryBox.Top < destination.Y)
+                    {
+                        // box in between line, get left/right
+                        var sum = GBlocks[i].BoundryBox.Left - 10;
+                        if (sum < MinLeft)
+                            MinLeft = (int)sum;
+
+                        sum = GBlocks[i].BoundryBox.Right + 10;
+                        if (GBlocks[i].BoundryBox.Right > MaxRight)
+                            MaxRight = (int)sum;
+                    }
+                }
+
+                // check most block to the left/right
+                result.Add(new RawVector2(MinLeft, sourceStart.Y));
+                result.Add(new RawVector2(MinLeft, destinationPreEnd.Y));
+
+                // end stub
+                result.Add(destinationPreEnd);
+                result.Add(destination);
 
                 return result;
+            }
+
+            private void DetourColide(ref List<RawVector2> currentPath, RawVector2 source, RawVector2 destination, int index, ref int depth)
+            {
+                if (depth > 7)
+                    return;
+
+                for(int i = index; i < GBlocks.Count-1; i++)
+                {
+                    // TODO: watch out for negative values?
+
+                    // calculate collision
+                    var colider = GBlocks[i].CheckCollision(source, destination);
+
+                    if (colider == BlockColider.Top)
+                    {
+                        // add current dot to list and use as start point
+                        RawVector2 lineInterruptStart = new RawVector2(source.X, GBlocks[i].BoundryBox.Top-10f);
+                        // left or right?
+                        RawVector2 lineInterruptEnd;
+                        lineInterruptEnd = new RawVector2(source.X - (GBlocks[i].GetBlockWidth()/2)  - 10f, GBlocks[i].BoundryBox.Top-10f); // left!
+
+                        currentPath.Add(lineInterruptStart);
+                        currentPath.Add(lineInterruptEnd);
+                        depth++;
+                        DetourColide(ref currentPath, lineInterruptEnd, destination,i+1, ref depth);
+                        return;
+                    }
+                    // Y collides from below
+                    else if (colider == BlockColider.Bottom)
+                    {
+                        RawVector2 lineInterruptStart = new RawVector2(source.X, GBlocks[i].BoundryBox.Bottom + 10f);
+                        RawVector2 lineInterruptEnd = new RawVector2(source.X - (GBlocks[i].GetBlockWidth() / 2) - 10f, GBlocks[i].BoundryBox.Bottom + 10f); // left!
+                        currentPath.Add(lineInterruptStart);
+                        currentPath.Add(lineInterruptEnd);
+                        depth++;
+                        DetourColide(ref currentPath, lineInterruptEnd, destination, i+1, ref depth);
+                        return;
+                    }
+                    // X collides from Left
+                    else if (colider == BlockColider.Left)
+                    {
+                        RawVector2 lineInterruptStart = new RawVector2(GBlocks[i].BoundryBox.Left - 10f, source.Y);
+                        RawVector2 lineInterruptEnd;
+                        // up or down?
+                        if(source.Y > destination.Y)
+                            lineInterruptEnd = new RawVector2(GBlocks[i].BoundryBox.Left - 10f, source.Y + (GBlocks[i].GetBlockHeight()) + 10f); // top
+                        else   
+                            lineInterruptEnd = new RawVector2(GBlocks[i].BoundryBox.Left - 10f, source.Y - (GBlocks[i].GetBlockHeight()) - 10f); // bottom
+
+                        currentPath.Add(lineInterruptStart);
+                        currentPath.Add(lineInterruptEnd);
+                        depth++;
+                        DetourColide(ref currentPath, lineInterruptEnd, destination, i+1, ref depth);
+                        return;
+                    }
+                    // X collides from Right
+                    else if (colider == BlockColider.Right)
+                    {
+                        RawVector2 lineInterruptStart = new RawVector2(GBlocks[i].BoundryBox.Right + 10f, source.Y);
+                        RawVector2 lineInterruptEnd;
+                             // up or down?
+                        if (source.Y > destination.Y)
+                            lineInterruptEnd = new RawVector2(GBlocks[i].BoundryBox.Right + 10f, source.Y + (GBlocks[i].GetBlockHeight()) + 10f); // top
+                        else
+                            lineInterruptEnd = new RawVector2(GBlocks[i].BoundryBox.Right + 10f, source.Y - (GBlocks[i].GetBlockHeight()) - 10f); // bottom
+                        
+                        currentPath.Add(lineInterruptStart);
+                        currentPath.Add(lineInterruptEnd);
+                        depth++;
+                        DetourColide(ref currentPath, lineInterruptEnd, destination, i+1, ref depth);
+                        return;
+                    }
+                }
+                currentPath.Add(new RawVector2(destination.X, destination.Y)); // add destination
             }
         }
 
@@ -369,34 +540,29 @@ namespace U8Graph
         private void CreateArrows()
         {
             GArrows = new List<GraphArrow>();
-            // TODO: implement objects instead of this mess
             // TODO: dont render all blocks
 
-            // TODO: More the arrow renderings to a spcific class with collision detection
+            // TODO: add thicc-nes
             // add arrow dict with block offsets if needed
             foreach(var GB in GBlocks)
             {
                 var thicc = GB.GetBlockWidth();
                 if (GB.Block.JumpsToBlock == -1 && GB.Block.NextBlock != -1)
                 {
-                    //BArrows.Add(block.NextBlock, new RawVector2(((box.Left + box.Right) / 2), box.Bottom)); //blue, only one jump
-                    GArrows.Add(new GraphArrow(ref GBlocks)
-                    {
+                   GArrows.Add(new GraphArrow(ref GBlocks)
+                   {
                         Brush = blue2Brush,
-                        Start2D = new RawVector2(GB.GetBlockWidth(), GB.BoundryBox.Bottom),
                         Start = GB.Block.Address,
                         End = GB.Block.NextBlock
-                    });
+                   });
                 }
                 else if (GB.Block.NextBlock != -1)
                 {
                     //GB.BoundryBox.Left += thicc;
                     //GB.BoundryBox.Right += thicc;
-                    //RArrows.Add(block.NextBlock, new RawVector2(((box.Left + box.Right) / 2), box.Bottom)); // red, jump failed but not only one
                     GArrows.Add(new GraphArrow(ref GBlocks)
                     {
                         Brush = redBrush,
-                        Start2D = new RawVector2(GB.GetBlockWidth(), GB.BoundryBox.Bottom),
                         Start = GB.Block.Address,
                         End = GB.Block.NextBlock
                     });
@@ -407,13 +573,11 @@ namespace U8Graph
                     GArrows.Add(new GraphArrow(ref GBlocks)
                     {
                         Brush = greenBrush,
-                        Start2D = new RawVector2(GB.GetBlockWidth(), GB.BoundryBox.Bottom),
                         Start = GB.Block.Address,
                         End = GB.Block.JumpsToBlock
                     });
                 }
             }
-            
         }
 
         private void DrawBlock(GraphBlock block)
@@ -441,8 +605,7 @@ namespace U8Graph
                     if (lastPoint.HasValue)
                         DrawTarget.DrawLine(lastPoint.Value, p, ar.Brush);
                     lastPoint = p;
-                }
-                    
+                } 
             }
         }
 
