@@ -48,6 +48,8 @@ namespace U8Graph
         private int DownClickX;
         private int DownClickY;
 
+        public bool del = false;
+
         private List<GraphArrow> GArrows;
         private List<GraphBlock> GBlocks;
 
@@ -59,6 +61,8 @@ namespace U8Graph
             Right,
             Bottom
         }
+
+
         // class to keep track of all visual information about a block
         public class GraphBlock
         {
@@ -143,6 +147,12 @@ namespace U8Graph
                 BoundryBox.Bottom += GraphBlock.BlocksHeightOffset;
             }
 
+            public bool IsVisible(int width, int height)
+            {
+                return this.BoundryBox.Top - LastGraphY < height || this.BoundryBox.Bottom - LastGraphY < 0;
+                    //|| this.BoundryBox.Left - LastGraphX < 0 || this.BoundryBox.Right - LastGraphX < width; // TODO: fix this when im sober again
+            }
+
             public BlockColider CheckCollision(RawVector2 start, RawVector2 end)
             {
                 //  4   sY
@@ -172,16 +182,12 @@ namespace U8Graph
 
                 bool CollidesHorizontal()
                 {
-                    //return true;
                     return BoundryBox.Right > end.X && BoundryBox.Left < end.X;
-                    //return (start.X < BoundryBox.Right && BoundryBox.Right < end.X || start.X > BoundryBox.Left && BoundryBox.Left > end.X);
                 }
 
                 bool CollidesVertical()
                 {
-                    //return true;
                     return BoundryBox.Top > end.Y && BoundryBox.Bottom < end.Y;
-                    //return (start.Y < BoundryBox.Top && BoundryBox.Top < end.Y || start.Y > BoundryBox.Bottom && BoundryBox.Bottom > end.Y); 
                 }
             }
 
@@ -248,13 +254,6 @@ namespace U8Graph
                 LastGraphY = y;
             }
 
-            private RawVector2 ApplyGraphOffsets(RawVector2 vec)
-            {
-                // save last
-                vec.X -= LastGraphX;
-                vec.Y -= LastGraphY;
-                return vec;
-            }
 
             public List<RawVector2> CalculatePaths()
             {
@@ -293,7 +292,7 @@ namespace U8Graph
                     destinationPreEnd.Y -= 7;
 
 
-                // go to left/right
+                // TODO: decide to left/right
                 int MinLeft = (int)sourceStart.X;
                 int MaxRight = (int)sourceStart.X;
 
@@ -503,13 +502,12 @@ namespace U8Graph
                 DrawTarget.DrawLine(new RawVector2(DownClickX, DownClickY), new RawVector2(LastDownX, LastDownY), redBrush);
 
             // draw blocks when we have target ready
-            int target = 0;
+            int target = 2;
             if (flow != null && flow.Stubs != null && flow.Stubs.Count > target)
             {
                 // start of each rendering loop
                 GraphBlock.BlocksHeightOffset = 0;
-                DrawTarget.DrawText($"[{flow.Stubs[target].Count}]", fontSmall, new RawRectangleF(1, 21, 150, 20), blackBrush);
-
+                
                 // Create & Init GBlock List if needed
                 if (GBlocks == null)
                     CreateBlocks(target);
@@ -517,7 +515,14 @@ namespace U8Graph
                 // create GraphArrows
                 if (GArrows == null)
                     CreateArrows();
-                
+
+                if (!del)
+                {
+                    //GBlocks.RemoveRange(GBlocks.Count - (GBlocks.Count - 22), GBlocks.Count - 22);
+                    del = true;
+                }
+                DrawTarget.DrawText($"[{GBlocks.Count}]", fontSmall, new RawRectangleF(1, 21, 150, 20), blackBrush);
+
                 // draw GBlocks
                 foreach (var gb in GBlocks)
                     DrawBlock(gb);
@@ -531,9 +536,13 @@ namespace U8Graph
         private void CreateBlocks(int target)
         {
             GBlocks = new List<GraphBlock>();
+            int count = 0;
             foreach (var b in flow.Stubs[target])
             {
+                count++;
                 GBlocks.Add(new GraphBlock(flow.Blocks[b], this.Width, this.Height));
+                if (count > 19990)
+                    break;
             }
         }
 
@@ -584,6 +593,9 @@ namespace U8Graph
         {
             // update box with mouse positions
             block.Update(graphX, graphY);
+
+            if (!block.IsVisible(this.Width, this.Height))
+                return;
 
             // draw
             DrawTarget.FillRectangle(block.BoundryBox, whiteBrush);
