@@ -126,7 +126,12 @@ namespace U8Graph
 
             void drawloop()
             {
-                while(true)
+                Initialise(); // create graph blocks & arrows
+
+                if(GBlocks.Count > 0)
+                    graphY = (int)GBlocks[0].BoundryBox.Top; // jump to first block TODO: fix bug that causes this!
+
+                while (true)
                 {
                     DrawData();
                     Thread.Sleep(50);
