@@ -16,7 +16,7 @@ namespace U8Graph
         {
             Application.EnableVisualStyles();
             Application.SetCompatibleTextRenderingDefault(false);
-            Application.Run(new frmGraph());
+            Application.Run(new frmMain());
         }
     }
 }
