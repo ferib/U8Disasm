@@ -20,7 +20,7 @@ namespace U8Disasm.Decompiler
         private int StackMax = 0;
         private int StackMin = 0;
         private int StackPtr = 0;
-        private short EA = 0; // keep track of register EA (and DSR?)
+        private ushort EA = 0; // keep track of register EA (and DSR?)
 
         public U8Stack(ref List<U8CodeBlock> sub)
         {
@@ -99,6 +99,17 @@ namespace U8Disasm.Decompiler
                         case U8Decoder.U8_MOV_EA_CXR:
                         case U8Decoder.U8_MOV_EA_CQR:
                             MovHandler(cmd);
+                            break;
+                        case U8Decoder.U8_LEA_ER:
+                            // loads EA with ERm
+                            break;
+                        case U8Decoder.U8_LEA_DA:
+                            // loads EA with sword
+                            EA = cmd.sWord;
+                            break;
+                        case U8Decoder.U8_LEA_D16_ER:
+                            // loads EA with Disp16[ERm]
+                            EA = (ushort)((cmd.Op1 * 0x10000) + cmd.sWord); // TODO: verify (= 0000h[erX])
                             break;
                         default:
                             break;
