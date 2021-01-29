@@ -20,7 +20,7 @@ namespace U8Disasm.Decompiler
         private int StackMax = 0;
         private int StackMin = 0;
         private int StackPtr = 0;
-        private int EA = 0; // keep track of register EA
+        private short EA = 0; // keep track of register EA (and DSR?)
 
         public U8Stack(ref List<U8CodeBlock> sub)
         {
@@ -72,8 +72,33 @@ namespace U8Disasm.Decompiler
                         case U8Decoder.U8_DEC_EA:
                             EA--;
                             break;
+                        case U8Decoder.U8_MOV_CER_EAP: // all increase EA after execution
+                        case U8Decoder.U8_MOV_CR_EAP:
+                        case U8Decoder.U8_MOV_CXR_EAP:
+                        case U8Decoder.U8_MOV_CQR_EAP:
+                        case U8Decoder.U8_L_ER_EAP:
+                        case U8Decoder.U8_L_R_EAP:
+                        case U8Decoder.U8_L_XR_EAP:
+                        case U8Decoder.U8_L_QR_EAP:
+                        case U8Decoder.U8_ST_ER_EAP:
+                        case U8Decoder.U8_ST_R_EAP:
+                        case U8Decoder.U8_ST_XR_EAP:
+                        case U8Decoder.U8_ST_QR_EAP:
                         case U8Decoder.U8_INC_EA:
                             EA++;
+                            break;
+                        case U8Decoder.U8_MOV_EAP_CER: // inc EA
+                        case U8Decoder.U8_MOV_EAP_CR:
+                        case U8Decoder.U8_MOV_EAP_CXR:
+                        case U8Decoder.U8_MOV_EAP_CQR:
+                            MovHandler(cmd);
+                            EA++;
+                            break;
+                        case U8Decoder.U8_MOV_EA_CER:
+                        case U8Decoder.U8_MOV_EA_CR:
+                        case U8Decoder.U8_MOV_EA_CXR:
+                        case U8Decoder.U8_MOV_EA_CQR:
+                            MovHandler(cmd);
                             break;
                         default:
                             break;
