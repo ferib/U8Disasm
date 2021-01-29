@@ -102,6 +102,7 @@ namespace U8Disasm.Decompiler
                             break;
                         case U8Decoder.U8_LEA_ER:
                             // loads EA with ERm
+                            // TODO: EA = [erX]
                             break;
                         case U8Decoder.U8_LEA_DA:
                             // loads EA with sword
@@ -195,6 +196,20 @@ namespace U8Disasm.Decompiler
         private void MovHandler(U8Cmd cmd)
         {
             // saves the contents of the SP int the specified word-sized register
+
+            if (cmd.Type == U8Decoder.U8_MOV_SP_ER)
+            {
+                // restore stack ptr
+                //StackPtr = [cmd.Op2]; // memory location?
+            } 
+            else if (cmd.Type == U8Decoder.U8_MOV_ER_SP)
+            {
+                // save stack ptr
+            }else
+            {
+                // EA gets overwritten
+
+            }
         }
 
         private void Callhandler(U8Cmd cmd)
