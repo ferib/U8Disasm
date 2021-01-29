@@ -15,16 +15,20 @@ namespace U8Disasm.Decompiler
     //  PC (Program Counter) 16bit
     //  CSR (Code Segment register) 4bit
     //  PSW (Program Status word) 8bit
-    //  SP (Stack pointer) 16bit
+    //  SP (Stack pointer) 16bit (set to 00h~01h at start)
     //  LR1 ~ LR3 (Link register) 16bit
     //  LR 16 bit (save PC on subroutine)
     //  EPSW1 ~ EPSW3 (PSW Backup register) 8bit
     //  EA register 16bit
-    //  AR register 16bit
+    //  AR register 16bit (U8 Core Exclusive, no access for programs)
+    //  DSR (Data Segment Register) 8 bit
     //
     // QR0 = [XR0 XR4] 32bit*2
     // XR0 = [ER0, ER2] 16bit*2
-    // XR0 = [R0, R1] 8bit*2
+    // ER0 = [R0, R1] 8bit*2
+
+    // ER12 = BP (Base pointer)
+    // ER14 = FP (Frame pointer)
 
     // Control Register:
     //  PSW:
