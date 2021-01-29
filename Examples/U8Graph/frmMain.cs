@@ -23,17 +23,21 @@ namespace U8Graph
         public static U8Flow Flow;
         private Thread Analyser;
         private int CachedSubsCount = 0;
+        private string TargetFile = @"L:\Projects\Calculator\Casio\ROM_Dump.mem"; // NOTE: cba using menu all the time
 
         public frmMain()
         {
             InitializeComponent();
 
-            Thread Analyser = new Thread(new ThreadStart(analyse));
-            Analyser.Start();
+            this.Analyser = new Thread(new ThreadStart(analyse));
+            this.Analyser.Start();
 
             void analyse()
             {
-                frmMain.Flow = new U8Flow(File.ReadAllBytes(@"L:\Projects\Calculator\Casio\ROM_Dump.mem"));
+                while (!File.Exists(TargetFile))
+                    Thread.Sleep(2000);
+
+                frmMain.Flow = new U8Flow(File.ReadAllBytes(TargetFile));
                 Flow.Analyse(); // start analysis so others can check blocks
             }
 
@@ -100,13 +104,25 @@ namespace U8Graph
 
         private void frmMain_FormClosed(object sender, FormClosedEventArgs e)
         {
-            Analyser.Abort(); // TODO: let them suicide instead
+            if(Analyser != null)
+                Analyser.Abort(); // TODO: let them suicide instead
             Application.Exit(); // kill all threads
         }
 
         private void frmMain_FormClosing(object sender, FormClosingEventArgs e)
         {
             // TODO: ask to save?
+        }
+
+        private void openToolStripMenuItem_Click(object sender, EventArgs e)
+        {
+            OpenFileDialog fileDialog = new OpenFileDialog();
+            fileDialog.Title = "Select Binary File";
+            if(fileDialog.ShowDialog() == DialogResult.OK)
+            {
+                TargetFile = fileDialog.FileName;
+            }
+
         }
     }
 }
