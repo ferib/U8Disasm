@@ -12,7 +12,7 @@ namespace U8Disasm.Decompiler
     // Register:
     //
     //  r0 ~ r15, 8 bit
-    //  PC (Program Counter) 16bit
+    //  
     //  CSR (Code Segment register) 4bit
     //  PSW (Program Status word) 8bit
     //  SP (Stack pointer) 16bit (set to 00h~01h at start)

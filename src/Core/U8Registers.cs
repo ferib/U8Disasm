@@ -244,5 +244,54 @@ namespace U8Disasm.Core
         {
 
         }
+
+        public byte GetRegisterByIndex(byte Index)
+        {
+            byte[] regs = new byte[] { r0, r1, r2, r3, r4, r5, r6, r7, r8, r8, r10, r11, r12, r13, r14, r15 };
+            return regs[Index];
+        }
+
+        public ushort GetERegisterByIndex(byte Index)
+        {
+            ushort[] regs = new ushort[] { ER0, ER2, ER4, ER6, ER8, ER10, ER12, ER14 };
+            return regs[Index];
+        }
+
+        public uint GetXRegisterByIndex(byte Index)
+        {
+            uint[] regs = new uint[]{ XR0, XR4, XR8, XR12};
+            return regs[Index];
+        }
+
+        public ulong GetQRegisterByIndex(byte Index)
+        {
+            ulong[] regs = new ulong[] { QR0, QR8 };
+            return regs[Index];
+        }
+
+        public void SetRegisterByIndex(byte Index, byte value)
+        {
+            byte[] regs = new byte[] { r0, r1, r2, r3, r4, r5, r6, r7, r8, r8, r10, r11, r12, r13, r14, r15 };
+            regs[Index] = value;
+        }
+
+        public void SetERegisterByIndex(byte Index, ushort value)
+        {
+            ushort[] regs = new ushort[] { ER0, ER2, ER4, ER6, ER8, ER10, ER12, ER14 };
+            regs[Index] = value;
+        }
+
+        public void SetXRegisterByIndex(byte Index, ushort value)
+        {
+            uint[] regs = new uint[] { XR0, XR4, XR8, XR12 };
+            regs[Index] = value;
+        }
+
+        public void SetQRegisterByIndex(byte Index, ushort value)
+        {
+            ulong[] regs = new ulong[] { QR0, QR8 };
+            regs[Index] = value;
+        }
+
     }
 }
