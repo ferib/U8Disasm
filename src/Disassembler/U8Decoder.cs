@@ -890,19 +890,19 @@ namespace U8Disasm.Disassembler
         }
 
         // for signed 6-bit integers (Disp6)
-        static int IsNegative6Bit(byte n)
+        public static int IsNegative6Bit(byte n)
         {
             return (n >> 5) & 0x01; // msb determines sign
         }
 
         // for signed 7-bit integers (#imm7)
-        static int isNegative7Bit(byte n)
+        public static int isNegative7Bit(byte n)
         {
             return (n >> 6) & 0x01; // msb determines sign
         }
 
         // calculate absolute value for signed 6-bit number (Disp6)
-        static byte ABS6Bit(byte n)
+        public static byte ABS6Bit(byte n)
         {
             if (IsNegative6Bit(n) == 1)      // -ive number
                 return (byte)(~n + 1 & 0x3f); //	flip bits and add 1...
@@ -911,7 +911,7 @@ namespace U8Disasm.Disassembler
         }
 
         // calculate absolute value for signed 7-bit number (#imm7)
-        static byte ABS7Bit(byte n)
+        public static byte ABS7Bit(byte n)
         {
             if (isNegative7Bit(n) == 1)      // -ive number
                 return (byte)(~n + 1 & 0x7f); //	flip bits and add 1...

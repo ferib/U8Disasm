@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using System.Text;
 using U8Disasm.Analyser;
 
-namespace U8Disasm.Decompilation
+namespace U8Disasm.Decompiler
 {
     public class U8Output
     {
