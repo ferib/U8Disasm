@@ -353,10 +353,11 @@ namespace U8Disasm.Core
         private void DECea(U8Cmd cmd)
         {
             // this inst subtracts one from the EA register
-            this.Registers.EA--;
+            int res = this.Registers.EA-1;
+            this.Registers.EA = (ushort)res;
             this.Registers.PSW.Z = this.Registers.EA == 0;
             // S
-            this.Registers.PSW.OV = this.Registers.EA > ushort.MaxValue;
+            this.Registers.PSW.OV = res > ushort.MaxValue;
             // HC
             this.Registers.PC += 2;
         }
@@ -380,6 +381,33 @@ namespace U8Disasm.Core
                 this.Registers.SetERegisterByIndex((byte)cmd.Op1, div);
                 this.Registers.SetRegisterByIndex((byte)cmd.Op2, mod);
             }
+            this.Registers.PC += 2;
+        }
+        private void EI(U8Cmd cmd)
+        {
+            // this inst sets the Master Interrupt Enable to 1 to enable maskable interrupts
+            this.Registers.PSW.MIE = true;
+            this.Registers.PC += 2;
+        }
+        private void EXTBWEreg(U8Cmd cmd)
+        {
+            // this instruction extends the content of the Rn register to signed 16-bit format and stores
+            // it in the ERn register
+            // The contents of the Rn+1 are filled with bit 7 of the Rn register, as the result
+
+            // TODO: look into again
+
+            this.Registers.PC += 2;
+        }
+        private void INCea(U8Cmd cmd)
+        {
+            // this inst adds one to the byte at the address in the EA register
+            int res = this.Registers.EA + 1; // byte?
+            this.Registers.EA = (ushort)res;
+            this.Registers.PSW.Z = this.Registers.EA == 0;
+            // S
+            this.Registers.PSW.OV = res > ushort.MaxValue;
+            // HC
             this.Registers.PC += 2;
         }
         public void Execute(U8Cmd cmd)
@@ -457,6 +485,13 @@ namespace U8Disasm.Core
                     break;
                 case U8Decoder.U8_DIV_ER:
                     DIVEReg(cmd);
+                    break;
+                case U8Decoder.U8_EI:
+                    EI(cmd);
+                    break;
+                //case U8Decoder.U8_EXTBW_ER:
+                case U8Decoder.U8_INC_EA:
+                    INCea(cmd);
                     break;
                 default:
                     break;
