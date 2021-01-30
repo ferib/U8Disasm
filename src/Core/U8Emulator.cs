@@ -410,6 +410,115 @@ namespace U8Disasm.Core
             // HC
             this.Registers.PC += 2;
         }
+        private void LERegEA(U8Cmd cmd)
+        {
+            this.Registers.SetERegisterByIndex((byte)cmd.Op1, this.Registers.EA);
+            this.Registers.PSW.Z = this.Registers.GetERegisterByIndex((byte)cmd.Op1) == 0;
+            // S
+            this.Registers.PC += 2;
+        }
+        private void LERegEAP(U8Cmd cmd)
+        {
+            this.Registers.SetERegisterByIndex((byte)cmd.Op1, this.Registers.EA);
+            this.Registers.PSW.Z = this.Registers.GetERegisterByIndex((byte)cmd.Op1) == 0;
+            // S
+            this.Registers.PC += 2;
+            this.Registers.EA += 1;
+        }
+        private void LERegEReg(U8Cmd cmd)
+        {
+            this.Registers.SetERegisterByIndex((byte)cmd.Op1, this.Registers.GetERegisterByIndex((byte)cmd.Op2));
+            this.Registers.PSW.Z = this.Registers.GetERegisterByIndex((byte)cmd.Op1) == 0;
+            // S
+            this.Registers.PC += 2;
+        }
+        private void LERegD16EReg(U8Cmd cmd)
+        {
+            // TODO
+            // S
+            this.Registers.PC += 4;
+        }
+        private void LERegD6BP(U8Cmd cmd)
+        {
+            //TODO
+            // S
+            this.Registers.PC += 2;
+        }
+        private void LERegD6FP(U8Cmd cmd)
+        {
+            //TODO
+            // S
+            this.Registers.PC += 2;
+        }
+        private void LERegDA(U8Cmd cmd)
+        {
+            //TODO
+            // S
+            this.Registers.PC += 4;
+        }
+        private void LRegEA(U8Cmd cmd)
+        {
+            this.Registers.SetRegisterByIndex((byte)cmd.Op1, (byte)this.Registers.EA);
+            this.Registers.PSW.Z = this.Registers.GetRegisterByIndex((byte)cmd.Op1) == 0;
+            // S
+            this.Registers.PC += 2;
+        }
+        private void LRegEAP(U8Cmd cmd)
+        {
+            LRegEA(cmd);
+            this.Registers.EA++;
+        }
+        private void LRegER(U8Cmd cmd)
+        {
+            this.Registers.SetRegisterByIndex((byte)cmd.Op1, this.Registers.GetRegisterByIndex((byte)cmd.Op2));
+            this.Registers.PSW.Z = this.Registers.GetRegisterByIndex((byte)cmd.Op1) == 0;
+            // S
+            this.Registers.PC += 2;
+        }
+        private void LRegD16EReg(U8Cmd cmd)
+        {
+            // TODO
+            this.Registers.PC += 4;
+        }
+        private void LRegD6BP(U8Cmd cmd)
+        {
+            // TODO
+            this.Registers.PC += 2;
+        }
+        private void LRegD6FP(U8Cmd cmd)
+        {
+            // TODO
+            this.Registers.PC += 2;
+        }
+        private void LRegDA(U8Cmd cmd)
+        {
+            // TODO
+            this.Registers.PC += 4;
+        }
+        private void LXRegEA(U8Cmd cmd)
+        {
+            this.Registers.SetXRegisterByIndex((byte)cmd.Op1, this.Registers.EA);
+            this.Registers.PSW.Z = this.Registers.GetXRegisterByIndex((byte)cmd.Op1) == 0;
+            // S
+            this.Registers.PC += 2;
+        }
+        private void LXRegEAP(U8Cmd cmd)
+        {
+            LXRegEA(cmd);
+            this.Registers.EA++;
+        }
+        private void LQRegEA(U8Cmd cmd)
+        {
+            this.Registers.SetQRegisterByIndex((byte)cmd.Op1, this.Registers.EA);
+            this.Registers.PSW.Z = this.Registers.GetQRegisterByIndex((byte)cmd.Op1) == 0;
+            // S
+            this.Registers.PC += 2;
+        }
+        private void LQRegEAP(U8Cmd cmd)
+        {
+            LQRegEA(cmd);
+            this.Registers.EA++;
+        }
         public void Execute(U8Cmd cmd)
         {
             switch (cmd.Type)
@@ -492,6 +601,45 @@ namespace U8Disasm.Core
                 //case U8Decoder.U8_EXTBW_ER:
                 case U8Decoder.U8_INC_EA:
                     INCea(cmd);
+                    break;
+                //case U8Decoder.U8_L
+                case U8Decoder.U8_L_ER_EA:
+                    LERegEA(cmd);
+                    break;
+                case U8Decoder.U8_L_ER_EAP:
+                    LERegEAP(cmd);
+                    break;
+                case U8Decoder.U8_L_ER_ER:
+                    LERegEReg(cmd);
+                    break;
+                //case U8Decoder.U8_L_ER_D16_ER:
+                //case U8Decoder.U8_L_ER_D6_BP:
+                //case U8Decoder.U8_L_ER_D6_FP:
+                //case U8Decoder.U8_L_ER_DA:
+                case U8Decoder.U8_L_R_EA:
+                    LRegEA(cmd);
+                    break;
+                case U8Decoder.U8_L_R_EAP:
+                    LRegEAP(cmd);
+                    break;
+                case U8Decoder.U8_L_R_ER:
+                    LRegER(cmd);
+                    break;
+                //case U8Decoder.U8_L_R_D16_ER:
+                //case U8Decoder.U8_L_R_D6_BP:
+                //case U8Decoder.U8_L_R_D6_FP:
+                //case U8Decoder.U8_L_R_DA:
+                case U8Decoder.U8_L_XR_EA:
+                    LXRegEA(cmd);
+                    break;
+                case U8Decoder.U8_L_XR_EAP:
+                    LXRegEAP(cmd);
+                    break;
+                case U8Decoder.U8_L_QR_EA:
+                    LQRegEA(cmd);
+                    break;
+                case U8Decoder.U8_L_QR_EAP:
+                    LQRegEAP(cmd);
                     break;
                 default:
                     break;
