@@ -894,6 +894,161 @@ namespace U8Disasm.Core
             this.Registers.PC += 2;
         }
 
+        private void RTI(U8Cmd cmd)
+        {
+            // this inst is for returning from an interrupt handler
+            // it restores the program status word (PSW) and the program counter (PC) from
+            // the exception program status word (EPSW1 to EPSW3) register and exception link
+            // register (ELR1 ~ ELR3), respectively. For the current exception level (ELEVEL) setting
+            // 1 for maskable interrupt and 2 for non-maskable ones
+            this.Registers.CSR = this.Registers.GetECSRByIndex(this.Registers.PSW.ELEVEL);
+            this.Registers.PC = this.Registers.GetELRByIndex(this.Registers.PSW.ELEVEL);
+            this.Registers.PSW.Set((byte)this.Registers.GetEPSWByIndex(this.Registers.PSW.ELEVEL)); // TODO: verify this?
+            this.Registers.PC += 2;
+        }
+
+        private void SBDbit(U8Cmd cmd)
+        {
+            // this instr test the specified bit by reading it form memory, invesing it, and
+            // storing the result in the Z flag, it then sets the original bit tp 1
+            // this bit address DBitadr has the format Badr16bit where bit is an integer between 0 and
+            // 7 specifying the bit position within the memory byte
+
+            // TODO
+        }
+
+        private void SBRegBit(U8Cmd cmd)
+        {
+            // this instr reads the specified bbit from the specified byte-sized register, inverts it,
+            // and stores it in the Z flag, it then sets the original bit to 1
+            // bit_ffset is an integer between 0 and 7 specifying the bit position within the register
+        }
+
+        private void SC(U8Cmd cmd)
+        {
+            // this instr sets the carry flag to 1
+            this.Registers.PSW.C = true;
+            this.Registers.PC += 2;
+        }
+
+        private void SLLRegReg(U8Cmd cmd)
+        {
+            // todo
+        }
+        private void SLLRegO(U8Cmd cmd)
+        {
+            // todo
+        }
+
+        private void SLLCRegReg(U8Cmd cmd)
+        {
+            // TODO
+        }
+        private void SLLCRegO(U8Cmd cmd)
+        {
+            // TODO
+        }
+
+        private void SRARegReg(U8Cmd cmd)
+        {
+            // TODO
+        }
+        private void SRARegO(U8Cmd cmd)
+        {
+            // TODO
+        }
+
+        private void SRLRegReg(U8Cmd cmd)
+        {
+            // TODO
+        }
+
+        private void SRLRegI(U8Cmd cmd)
+        {
+            // TODO
+        }
+
+        private void SRLCRegReg(U8Cmd cmd)
+        {
+            // TODO
+        }
+        private void SRLCRegO(U8Cmd cmd)
+        {
+            // TODO
+        }
+
+        // TODO ST's
+
+        private void SUBRegReg(U8Cmd cmd)
+        {
+            // this instr subtracts the contents of the second byte-sized register from those of the
+            // first and stores the result in the first
+        }
+
+        private void SUBCRegReg(U8Cmd cmd)
+        {
+            // this instr subtracts the contents of the second byte-sized register and the carry
+            // flag from the contents of the first register and stores the result in the first register
+
+        }
+
+        private void SWI(U8Cmd cmd)
+        {
+            // this instr loads the specified vector table entry into the program counter PC the
+            // operand is an integer between 0 and 63, during the interrupt cycle, the instruction also
+            // saves the addres of the next instr in the ELR1 register
+            this.Registers.EPSW1 = this.Registers.PSW.Get();
+            this.Registers.PSW.ELEVEL = 1;
+            this.Registers.ELR1 = this.Registers.PC += 2;
+            this.Registers.ECSR1 = this.Registers.CSR;
+            this.Registers.PSW.MIE = false;
+            // TODO: this.Registers.PC = TABLE[(byte)cmd.Op1<<1]
+        }
+
+        private void TBDbit(U8Cmd cmd)
+        {
+            // this instr test the specified bit by reading the from memory, inverting it, and
+            // storing the result in the Z flag
+            // the bit address Dbitaddr has the format Dadr16.bit, where bit is an integer betweem 0 and
+            // 7 specifying the bit position within the memory byte
+
+            // TODO: Z ~[Dbit]
+        }
+
+        private void TBReg(U8Cmd cmd)
+        {
+            // this instr test the specified bit by reading it from memory, inverting it, and
+            // storing the result in the Z flag
+            // bit_offset us an integer between 0 and 7 specifying the bit position within the register
+            // TODO: Z = ~Rn[bit_offset]
+        }
+
+        private void XORReg(U8Cmd cmd)
+        {
+            // this insts XORs the contents of the specified byte-sized register and object and
+            // stores the result in the register
+            this.Registers.SetRegisterByIndex((byte)cmd.Op1, 
+                (byte)(this.Registers.GetRegisterByIndex((byte)cmd.Op1) ^ this.Registers.GetRegisterByIndex((byte)cmd.Op2)));
+            
+            this.Registers.PSW.Z = this.Registers.GetRegisterByIndex((byte)cmd.Op1) == 0;
+            // S
+            this.Registers.PC += 2;
+        }
+
+        private void XORO(U8Cmd cmd)
+        {
+            // this insts XORs the contents of the specified byte-sized register and object and
+            // stores the result in the register
+            this.Registers.SetRegisterByIndex((byte)cmd.Op1,
+                (byte)(this.Registers.GetRegisterByIndex((byte)cmd.Op1) ^ (byte)cmd.Op2));
+
+            this.Registers.PSW.Z = this.Registers.GetRegisterByIndex((byte)cmd.Op1) == 0;
+            // S
+            this.Registers.PC += 2;
+            this.Registers.PC += 2;
+        }
+
+
         public void Execute(U8Cmd cmd)
         {
             switch (cmd.Type)
