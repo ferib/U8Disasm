@@ -136,6 +136,28 @@ namespace U8Disasm.Core
             this.Registers.PSW.OV = sum > byte.MaxValue;
             // TODO: HC
         }
+        private void AndRegReg(U8Cmd cmd)
+        {
+            // this inst ANDs the content of the specified byte-sized register
+            // and object and stores the result in the register
+            var res = this.Registers.GetRegisterByIndex((byte)cmd.Op1) & this.Registers.GetRegisterByIndex((byte)cmd.Op2);
+
+            this.Registers.SetRegisterByIndex((byte)cmd.Op1, (byte)res);
+            this.Registers.PC += 2;
+
+            this.Registers.PSW.Z = res == 0;
+            // TODO: S 
+        }
+        private void AndRegO(U8Cmd cmd)
+        {
+            var res = this.Registers.GetRegisterByIndex((byte)cmd.Op1) & (byte)cmd.Op2;
+
+            this.Registers.SetRegisterByIndex((byte)cmd.Op1, (byte)res);
+            this.Registers.PC += 2;
+
+            this.Registers.PSW.Z = res == 0;
+            // TODO: S 
+        }
         public void Execute(U8Cmd cmd)
         {
             switch (cmd.Type)
@@ -161,8 +183,12 @@ namespace U8Disasm.Core
                 case U8Decoder.U8_ADDC_O:
                     AddcRegO(cmd);
                     break;
-                //case U8Decoder.U8_AND_O:
-                //case U8Decoder.U8_AND_R:
+                case U8Decoder.U8_AND_O:
+                    AndRegO(cmd);
+                    break;
+                case U8Decoder.U8_AND_R:
+                    AndRegReg(cmd);
+                    break;
                 // OLD ones
                 case U8Decoder.U8_PUSH_ER:
                 case U8Decoder.U8_PUSH_QR:
@@ -181,9 +207,6 @@ namespace U8Disasm.Core
                 case U8Decoder.U8_SUBC_R:
                 case U8Decoder.U8_SUB_R:
                     SubHandler(cmd);
-                    break;
-                case U8Decoder.U8_ADD_SP_O: // SP += value
-                    AddHandler(cmd); // value ranged between -128 and +127
                     break;
                 case U8Decoder.U8_MOV_SP_ER:
                 case U8Decoder.U8_MOV_ER_SP:
