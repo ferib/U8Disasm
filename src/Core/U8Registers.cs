@@ -40,6 +40,17 @@ namespace U8Disasm.Core
             this.ELEVEL = 0;
         }
 
+        public void Set(byte o)
+        {
+            // TODO
+        }
+
+        public byte Get()
+        {
+            // TODO
+            return 0;
+        }
+
         // TODO: add cstr with input
     }
 
@@ -254,13 +265,16 @@ namespace U8Disasm.Core
         public ushort PC;   // PC (Program Counter) 16bit
         public byte CSR;    // CSR (Code Segment register) 4bit
         public byte LCSR;    // LCSR (saved Code Segment register) 4bit
+        public byte ECSR1;  // ECXSR1 ~ ECSR3 - CSR Backup Registers
+        public byte ECSR2;
+        public byte ECSR3;
         public U8PSW PSW;    // PSW(Program Status word) 8bit
         public ushort SP;   // SP (Stack pointer) 16bit (set to 00h~01h at start)
 
         public ushort LR;   // LR 16 bit (save PC on subroutine)
-        public ushort LR1;  // LR1 ~ LR3 (Link register) 16bit
-        public ushort LR2;
-        public ushort LR3;
+        public ushort ELR1;  // ELR1 ~ ELR3 (Link register) 16bit
+        public ushort ELR2;
+        public ushort ELR3;
 
         public ushort EPSW1;    // EPSW1 ~ EPSW3 (PSW Backup register) 8bit
         public ushort EPSW2;
@@ -286,9 +300,9 @@ namespace U8Disasm.Core
             this.LCSR = 0;
             this.SP = 0;
             this.LR = 0;
-            this.LR1 = 0;
-            this.LR2 = 0;
-            this.LR3 = 0;
+            this.ELR1 = 0;
+            this.ELR2 = 0;
+            this.ELR3 = 0;
             this.EPSW1 = 0;
             this.EPSW2 = 0;
             this.EPSW3 = 0;
@@ -321,6 +335,23 @@ namespace U8Disasm.Core
             return regs[Index];
         }
 
+        public byte GetECSRByIndex(byte Index)
+        {
+            byte[] regs = new byte[] {LCSR, ECSR1, ECSR2, ECSR3 };
+            return regs[Index];
+        }
+
+        public ushort GetELRByIndex(byte Index)
+        {
+            ushort[] regs = new ushort[] { LR, ELR1, ELR2, ELR3 };
+            return regs[Index];
+        }
+        public ushort GetEPSWByIndex(byte Index)
+        {
+            ushort[] regs = new ushort[] { EPSW1, EPSW1, EPSW2, EPSW3 };
+            return regs[Index];
+        }
+
         public void SetRegisterByIndex(byte Index, byte value)
         {
             byte[] regs = new byte[] { r0, r1, r2, r3, r4, r5, r6, r7, r8, r8, r10, r11, r12, r13, r14, r15 };
@@ -345,5 +376,22 @@ namespace U8Disasm.Core
             regs[Index] = value;
         }
 
+        public void SetECSRByIndex(byte Index, byte value)
+        {
+            byte[] regs = new byte[] {LCSR, ECSR1, ECSR2, ECSR3 };
+            regs[Index] = value;
+        }
+
+        public void SetELRByIndex(byte Index, ushort value)
+        {
+            ushort[] regs = new ushort[] { LR, ELR1, ELR2, ELR3 };
+            regs[Index] = value;
+        }
+
+        public void SetEPSWByIndex(byte Index, ushort value)
+        {
+            ushort[] regs = new ushort[] { EPSW1, EPSW1, EPSW2, EPSW3 };
+            regs[Index] = value;
+        }
     }
 }

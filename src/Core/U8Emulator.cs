@@ -354,10 +354,10 @@ namespace U8Disasm.Core
         {
             // this inst subtracts one from the EA register
             int res = this.Registers.EA-1;
-            this.Registers.EA = (ushort)res;
+            this.Registers.EA = (byte)res;
             this.Registers.PSW.Z = this.Registers.EA == 0;
             // S
-            this.Registers.PSW.OV = res > ushort.MaxValue;
+            this.Registers.PSW.OV = (byte)(res+1) == 0;
             // HC
             this.Registers.PC += 2;
         }
@@ -419,10 +419,7 @@ namespace U8Disasm.Core
         }
         private void LERegEAP(U8Cmd cmd)
         {
-            this.Registers.SetERegisterByIndex((byte)cmd.Op1, this.Registers.EA);
-            this.Registers.PSW.Z = this.Registers.GetERegisterByIndex((byte)cmd.Op1) == 0;
-            // S
-            this.Registers.PC += 2;
+            LERegEA(cmd);
             this.Registers.EA += 1;
         }
         private void LERegEReg(U8Cmd cmd)
@@ -519,6 +516,306 @@ namespace U8Disasm.Core
             LQRegEA(cmd);
             this.Registers.EA++;
         }
+        private void LEAEReg(U8Cmd cmd)
+        {
+            // this inst loads the EA register with a specified word value
+            this.Registers.EA = this.Registers.GetERegisterByIndex((byte)cmd.Op1);
+            this.Registers.PC += 2;
+        }
+        private void LEAD16(U8Cmd cmd)
+        {
+            // this inst loads the EA register with a specified word value
+            this.Registers.EA = cmd.sWord;
+            this.Registers.PC += 4;
+        }
+        private void LEAAddr(U8Cmd cmd)
+        {
+            // this inst loads the EA register with a specified word value
+            // TODO: figure out Disp16[ERm]
+            //this.Registers.EA = (0x10000) + cmd.sWord;
+            this.Registers.PC += 4;
+        }
+        private void MOVCRReg(U8Cmd cmd)
+        {
+            //TODO: CR?
+            this.Registers.PC += 2;
+        }
+        private void MOVCREA(U8Cmd cmd)
+        {
+            //TODO: CR?
+            this.Registers.PC += 2;
+        }
+        private void MOVCREAP(U8Cmd cmd)
+        {
+            //TODO: CR?
+            MOVCREA(cmd);
+            this.Registers.EA++;
+        }
+        private void MOVCEREA(U8Cmd cmd)
+        {
+            //TODO: CER?
+            // this instr loads t he specified coprocessor word-sized register from
+            // the specified word address
+            //this.Registers.
+            this.Registers.PC += 2;
+        }
+        private void MOVCEREAP(U8Cmd cmd)
+        {
+            //TODO: CER?
+            MOVCEREA(cmd);
+            this.Registers.EA++;
+        }
+        private void MOVCXREA(U8Cmd cmd)
+        {
+
+        }
+        private void MOVCXREAP(U8Cmd cmd)
+        {
+
+        }
+        private void MOVCQREA(U8Cmd cmd)
+        {
+
+        }
+        private void MOVCQREAP(U8Cmd cmd)
+        {
+
+        }
+        private void MOVRegCR(U8Cmd cmd)
+        {
+
+        }
+        private void MOVEACER(U8Cmd cmd)
+        {
+
+        }
+        private void MOVEAPCER(U8Cmd cmd)
+        {
+
+        }
+        private void MOVEACR(U8Cmd cmd)
+        {
+
+        }
+        private void MOVEAPCR(U8Cmd cmd)
+        {
+
+        }
+        private void MOVEACXR(U8Cmd cmd)
+        {
+
+        }
+        private void MOVEAPCXR(U8Cmd cmd)
+        {
+
+        }
+        private void MOVEACQR(U8Cmd cmd)
+        {
+
+        }
+        private void MOVEAPCQR(U8Cmd cmd)
+        {
+
+        }
+        private void MOVECECSRReg(U8Cmd cmd)
+        {
+            // this inst loads the contents of the specified register int othe local code segment
+            // register LCSR if ELEVEL is zero and into the EXSR register (ECSR1 to ECSR3) for
+            // the current exception level (ELEVEL) setting otherwise
+            if (this.Registers.PSW.ELEVEL == 0)
+                this.Registers.LCSR = this.Registers.GetRegisterByIndex((byte)cmd.Op2);
+            else
+                this.Registers.SetECSRByIndex(this.Registers.PSW.ELEVEL, this.Registers.GetRegisterByIndex((byte)cmd.Op2)); // NOTE: 1 or 2?
+            this.Registers.PC += 2;
+        }
+        private void MOVECECSREReg(U8Cmd cmd)
+        {
+            // this inst loads the contents of the specified word-sized register int othe local code segment
+            // register LR if ELEVEL is zero and into the exception link register (ELR1 to ELR3) for
+            // the current exception level (ELEVEL) setting otherwise
+            if (this.Registers.PSW.ELEVEL == 0)
+                this.Registers.LCSR = this.Registers.GetRegisterByIndex((byte)cmd.Op2);
+            else
+                this.Registers.SetECSRByIndex(this.Registers.PSW.ELEVEL, this.Registers.GetRegisterByIndex((byte)cmd.Op2)); // NOTE: 1 or 2?
+
+            this.Registers.PC += 2;
+        }
+        private void MOVELREReg(U8Cmd cmd)
+        {
+            // this inst loads the contents of the specified word-sized register into the link
+            // register LR if ELEVEL is zero and into the exception link register (ELR1~ELR3) for
+            // the current exception level (ELEBEL) settings otherwise
+            if (this.Registers.PSW.ELEVEL == 0)
+                this.Registers.LR = this.Registers.GetERegisterByIndex((byte)cmd.Op2);
+            else
+                this.Registers.SetELRByIndex(this.Registers.PSW.ELEVEL, this.Registers.GetERegisterByIndex((byte)cmd.Op2)); // NOTE: 1 or 2?
+
+            this.Registers.PC += 2;
+        }
+
+        private void MOVEPSWReg(U8Cmd cmd)
+        {
+            // this inst loads the content of the specified register into the exception program
+            // status word (EPSW1~EPSW3) register for the current exception level (ELEVEL)
+            // setting if ELBEL is nonzero
+            // if ELEVEL is zero, the inst does nothing
+            if(this.Registers.PSW.ELEVEL != 0)
+                this.Registers.SetEPSWByIndex(this.Registers.PSW.ELEVEL, this.Registers.GetRegisterByIndex((byte)cmd.Op2));
+
+            this.Registers.PC += 2;
+        }
+
+        private void MOVERegELR(U8Cmd cmd)
+        {
+            // this inst loads the specified word-sized register from the link register LR if
+            // ELEVEL is zero and from the excpetion link register (ELR1 to ELR3) for the current
+            // exception level (ELEBEL) setting otherwise
+            if (this.Registers.PSW.ELEVEL == 0)
+                this.Registers.SetERegisterByIndex((byte)cmd.Op1, this.Registers.LR);
+            else
+                this.Registers.SetERegisterByIndex((byte)cmd.Op1, this.Registers.GetELRByIndex((byte)cmd.Op2));
+
+            this.Registers.PC += 2;
+        }
+
+        private void MOVEregEreg(U8Cmd cmd)
+        {
+            // this inst loads the first word-sized register from the second
+            this.Registers.SetERegisterByIndex((byte)cmd.Op1, this.Registers.GetERegisterByIndex((byte)cmd.Op2));
+            this.Registers.PSW.Z = this.Registers.GetERegisterByIndex((byte)cmd.Op1) == 0;
+            // S
+            this.Registers.PC += 2;
+        }
+
+        private void MOVERegO(U8Cmd cmd)
+        {
+            // this inst loads the sign-extended imm7 into the specified word-sized register
+            // More precisely, it loads the immediate value into Rn, the lower half of the register, and
+            // copies bit 6 from the immediate value in Rn bit 7 amd all bits of Rn+1
+
+            // TODO
+        }
+
+        private void MOVERegSP(U8Cmd cmd)
+        {
+            // this instr saves the contents of the stack pointer (SP) in the specified word-sized register
+            this.Registers.SetERegisterByIndex((byte)cmd.Op1, this.Registers.SP);
+            this.Registers.PC += 2;
+        }
+
+        private void MOVOCER(U8Cmd cmd)
+        {
+            // this inst saves the contents of the specified coprocessor word-sized register at
+            // the specified word address in the EA register
+
+            // TODO
+        }
+
+        private void MOVOCQR(U8Cmd cmd)
+        {
+            // this instr saves the contents of the specified coprocessor squad word-sized register
+            // at the specified word address in the EA register
+
+            // TODO
+        }
+
+        private void MOVOCR(U8Cmd cmd)
+        {
+            // this inst saves the contents of the specified coprocessor byte-sized register at the
+            // specified byte address in the EA register
+
+            // TODO
+        }
+
+        private void MOVOCXR(U8Cmd cmd)
+        {
+            // this inst saves the contents of the specified coprocessor double word-sized
+            // register at the specified word address in the EA register
+
+            // TODO
+        }
+
+        private void MOVPSWO(U8Cmd cmd)
+        {
+            // this inst loads the program status word (PSW) from the specified byte-sized obj
+            // NOTE: place NOP right after to fix cycle delay
+            this.Registers.PSW.Set((byte)cmd.Op2);// unsigned8
+            this.Registers.PC += 2;
+        }
+
+        private void MOVPSWReg(U8Cmd cmd)
+        {
+            // this inst loads the program status word (PSW) from the specified byte-sized obj
+            // NOTE: place NOP right after to fix cycle delay
+            this.Registers.PSW.Set(this.Registers.GetRegisterByIndex((byte)cmd.Op2));
+            this.Registers.PC += 2;
+        }
+
+        //private void MOVRegCR(U8Cmd cmd)
+        //{
+        //    // this inst loads the specified byte-sized register from the specified coprocessor
+        //    // byte-size register
+        //    // TODO: this.Registers.SetRegisterByIndex((byte)cmd.Op1, this.Registers.)
+        //    this.Registers.PC += 2;
+        //}
+
+        private void MOVRegECSR(U8Cmd cmd)
+        {
+            // this inst loads the specified byte-sized register from the local code segment
+            // register (LCSR) if ELEVEL is zero and from the ECSR register (ECSR1 to ECSR3) for
+            // the current exception level (ELEVEL) setting otherwise
+            if (this.Registers.PSW.ELEVEL == 0)
+                this.Registers.SetRegisterByIndex((byte)cmd.Op1, this.Registers.LCSR);
+            else
+                this.Registers.SetRegisterByIndex((byte)cmd.Op1, this.Registers.GetECSRByIndex((byte)cmd.Op2));
+            this.Registers.PC += 2;
+        }
+
+        private void MOVRegEPSW(U8Cmd cmd)
+        {
+            // this instr loads the specified byte-sized register from the exception program
+            // status word (EPSW1 to EPSW3) register for the current exception level (ELEVEL)
+            // setting if ELEVEL is nonzero
+            if(this.Registers.PSW.ELEVEL != 0)
+            {
+                this.Registers.SetRegisterByIndex((byte)cmd.Op1, (byte)this.Registers.GetEPSWByIndex(this.Registers.PSW.ELEVEL));
+            }
+            this.Registers.PC += 2;
+        }
+
+        private void MOVRegPSW(U8Cmd cmd)
+        {
+            // this instr loads the specified byte-sized register from the program status word (PSW)
+            this.Registers.SetRegisterByIndex((byte)cmd.Op1, this.Registers.PSW.Get());
+            this.Registers.PC += 2;
+        }
+
+        private void MOVRegReg(U8Cmd cmd)
+        {
+            // this inst loads the specified byte-sized register from the specified byte-sized register
+            this.Registers.SetRegisterByIndex((byte)cmd.Op1, this.Registers.GetRegisterByIndex((byte)cmd.Op2));
+            this.Registers.PSW.Z = this.Registers.GetRegisterByIndex((byte)cmd.Op1) == 0;
+            // S
+            this.Registers.PC += 2;
+        }
+
+        private void MOVRegO(U8Cmd cmd)
+        {
+            // this inst loads the specified byte-sized register from the specified byte-sized imm8
+            this.Registers.SetRegisterByIndex((byte)cmd.Op1, (byte)cmd.Op2); // #imm8?
+            this.Registers.PSW.Z = this.Registers.GetRegisterByIndex((byte)cmd.Op1) == 0;
+            // S
+            this.Registers.PC += 2;
+        }
+
+        private void MOVSPEReg(U8Cmd cmd)
+        {
+            // this instr loads the stack pointer (SP_) from the specified word-sized register
+            this.Registers.SP = this.Registers.GetERegisterByIndex((byte)cmd.Op2);
+            this.Registers.PC += 2;
+        }
+
+        
         public void Execute(U8Cmd cmd)
         {
             switch (cmd.Type)
@@ -641,7 +938,34 @@ namespace U8Disasm.Core
                 case U8Decoder.U8_L_QR_EAP:
                     LQRegEAP(cmd);
                     break;
+                case U8Decoder.U8_LEA_ER:
+                    LEAEReg(cmd);
+                    break;
+                case U8Decoder.U8_LEA_DA:
+                    LEAAddr(cmd);
+                    break;
+                //case U8Decoder.U8_LEA_D16_ER:
+                //case U8Decoder.U8_MOV_CR_R:
+                //case U8Decoder.U8_MOV_CR_EA:
+                //case U8Decoder.U8_MOV_CER_EA:
+                //case U8Decoder.U8_MOV_CQR_EA:
+                //case U8Decoder.U8_MOV_CXR_EA:
+                //case U8Decoder.U8_MOV_CR_EAP:
+                //case U8Decoder.U8_MOV_CER_EAP:
+                //case U8Decoder.U8_MOV_CQR_EAP:
+                //case U8Decoder.U8_MOV_CXR_EAP: // TODO: figure out the C (co-processor) Reg stuff
+                //case U8Decoder.U8_MOV_EA_CR:
+                //case U8Decoder.U8_MOV_EA_CER:
+                //case U8Decoder.U8_MOV_EA_CQR:
+                //case U8Decoder.U8_MOV_EA_CXR:
+                //case U8Decoder.U8_MOV_EAP_CR:
+                //case U8Decoder.U8_MOV_EAP_CER:
+                //case U8Decoder.U8_MOV_EAP_CQR:
+                //case U8Decoder.U8_MOV_EAP_CXR:
+                case U8Decoder.U8_MOV_ECSR_R:
+                case U8Decoder.U8_MOV_R_ECSR:
                 default:
+                    Console.WriteLine($"unimplemented type: {cmd.Type}"); // debugging
                     break;
             }
         }
