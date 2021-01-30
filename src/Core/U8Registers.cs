@@ -242,6 +242,7 @@ namespace U8Disasm.Core
 
         public ushort PC;   // PC (Program Counter) 16bit
         public byte CSR;    // CSR (Code Segment register) 4bit
+        public byte LCSR;    // LCSR (saved Code Segment register) 4bit
         public U8PSW PSW;    // PSW(Program Status word) 8bit
         public ushort SP;   // SP (Stack pointer) 16bit (set to 00h~01h at start)
 
