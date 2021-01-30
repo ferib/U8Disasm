@@ -815,7 +815,34 @@ namespace U8Disasm.Core
             this.Registers.PC += 2;
         }
 
-        
+        private void MULERegReg(U8Cmd cmd)
+        {
+            // this instr multiplies the contents of the two specified byte-size registers and stores
+            // the 16-bit product in the word-zied register corresponding to the first register
+            var res = this.Registers.GetRegisterByIndex((byte)cmd.Op1) * this.Registers.GetRegisterByIndex((byte)cmd.Op2);
+            this.Registers.SetERegisterByIndex((byte)cmd.Op1, (ushort)res);
+            this.Registers.PSW.Z = res == 0;
+            this.Registers.PC += 2;
+        }
+
+        private void NEGReg(U8Cmd cmd)
+        {
+            // this inst calculate the two complement of the contents of the specified
+            // byte-size register and stores the result in the register
+            this.Registers.SetRegisterByIndex((byte)cmd.Op1, (byte)(0 - this.Registers.GetRegisterByIndex((byte)cmd.Op1)));
+            // C
+            this.Registers.PSW.Z = this.Registers.GetRegisterByIndex((byte)cmd.Op1) == 0;
+            // S
+            this.Registers.PSW.OV = false; // can this even overflow?
+            // HC
+            this.Registers.PC += 2;
+        }
+
+        private void NOP(U8Cmd cmd)
+        {
+            // No operation
+            this.Registers.PC += 2;
+        }
         public void Execute(U8Cmd cmd)
         {
             switch (cmd.Type)
