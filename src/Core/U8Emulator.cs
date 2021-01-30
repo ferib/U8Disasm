@@ -210,6 +210,110 @@ namespace U8Disasm.Core
 
             this.Registers.PC = cmd.sWord;
         }
+        private void BRK(U8Cmd cmd)
+        {
+            if(this.Registers.PSW.ELEVEL > 1)
+            {
+                // CPU system reset
+                this.Registers.Initialise();
+                if (this.Memory != null)
+                {
+                    this.Registers.SP = BitConverter.ToUInt16(this.Memory, 0);
+                    this.Registers.SP = BitConverter.ToUInt16(this.Memory, 2);
+                }
+            }
+            else if(this.Registers.PSW.ELEVEL < 2)
+            {
+                // equivalent of nonmaskable interrupt. CPU then loads the PC with the word data from vector
+                // tabvle address 4 at the beginning of the code/program memory space
+                // TODO: add vector table!
+            }
+            
+        }
+        private void CMPERegEReg(U8Cmd cmd)
+        {
+            // this inst compars the contents of the two word-sized reg by
+            // subtracting the latter form the format and setting the PSW flags
+            // (register contenst dont change)
+
+            var res = this.Registers.GetERegisterByIndex((byte)cmd.Op1) - this.Registers.GetERegisterByIndex((byte)cmd.Op2);
+
+            // C
+            this.Registers.PSW.Z = res == 0;
+            // S
+            this.Registers.PSW.OV = res > ushort.MaxValue;
+            //HC
+
+            this.Registers.PC += 2;
+        }
+        private void CMPRegReg(U8Cmd cmd)
+        {
+            // this inst compares the contents of the specified byte-sized reg and object by
+            // subtracting the latter form the format and setting the PSW flags
+            // (register contenst dont change)
+
+            var res = this.Registers.GetRegisterByIndex((byte)cmd.Op1) - this.Registers.GetRegisterByIndex((byte)cmd.Op2);
+
+            // C
+            this.Registers.PSW.Z = res == 0;
+            // S
+            this.Registers.PSW.OV = res > byte.MaxValue;
+            //HC
+
+            this.Registers.PC += 2;
+        }
+        private void CMPRegO(U8Cmd cmd)
+        {
+            // this inst compares the contents of the specified byte-sized reg and object by
+            // subtracting the latter form the format and setting the PSW flags
+            // (register contenst dont change)
+
+            var res = this.Registers.GetRegisterByIndex((byte)cmd.Op1) - (byte)cmd.Op2;
+
+            // C
+            this.Registers.PSW.Z = res == 0;
+            // S
+            this.Registers.PSW.OV = res > byte.MaxValue;
+            //HC
+
+            this.Registers.PC += 2;
+        }
+        private void CMPCRegO(U8Cmd cmd)
+        {
+            // this inst comapres the contents of the reg and obj by subtracting the latter and the
+            // carry flag from the former and setting the PSW flags
+            // (register content doesnt change)
+            // can be used after a CMP to compate multibyte sequences
+            var res = this.Registers.GetRegisterByIndex((byte)cmd.Op1) - (byte)cmd.Op2;
+            if (this.Registers.PSW.C)
+                res--;
+
+            this.Registers.PC += 2;
+
+            // C
+            this.Registers.PSW.Z = res == 0;
+            // S
+            this.Registers.PSW.OV = res > byte.MaxValue;
+            // HC
+        }
+        private void CMPCRegReg(U8Cmd cmd)
+        {
+            // this inst comapres the contents of the reg and obj by subtracting the latter and the
+            // carry flag from the former and setting the PSW flags
+            // (register content doesnt change)
+            // can be used after a CMP to compate multibyte sequences
+            var res = this.Registers.GetRegisterByIndex((byte)cmd.Op1) - this.Registers.GetRegisterByIndex((byte)cmd.Op2);
+            if (this.Registers.PSW.C)
+                res--;
+
+            this.Registers.PC += 2;
+
+            // C
+            this.Registers.PSW.Z = res == 0;
+            // S
+            this.Registers.PSW.OV = res > byte.MaxValue;
+            // HC
+        }
 
         public void Execute(U8Cmd cmd)
         {
@@ -254,6 +358,24 @@ namespace U8Disasm.Core
                     break;
                 case U8Decoder.U8_BL_ER:
                     BLEReg(cmd);
+                    break;
+                case U8Decoder.U8_BRK:
+                    BRK(cmd);
+                    break;
+                case U8Decoder.U8_CMP_ER:
+                    CMPERegEReg(cmd);
+                    break;
+                case U8Decoder.U8_CMP_R:
+                    CMPRegReg(cmd);
+                    break;
+                case U8Decoder.U8_CMP_O:
+                    CMPRegO(cmd);
+                    break;
+                case U8Decoder.U8_CMPC_O:
+                    CMPCRegO(cmd);
+                    break;
+                case U8Decoder.U8_CMPC_R:
+                    CMPCRegReg(cmd);
                     break;
                 default:
                     break;

@@ -26,7 +26,18 @@ namespace U8Disasm.Core
 
         public U8PSW()
         {
+            Initialise();
+        }
 
+        public void Initialise()
+        {
+            this.C = false;
+            this.Z = false;
+            this.S = false;
+            this.OV = false;
+            this.MIE = false;
+            this.HC = false;
+            this.ELEVEL = 0;
         }
 
         // TODO: add cstr with input
@@ -263,6 +274,27 @@ namespace U8Disasm.Core
         public U8Registers()
         {
             this.PSW = new U8PSW();
+            Initialise();
+        }
+
+        public void Initialise()
+        {
+            this.QR0 = 0;
+            this.QR8 = 0;
+            this.PC = 0;
+            this.CSR = 0;
+            this.LCSR = 0;
+            this.SP = 0;
+            this.LR = 0;
+            this.LR1 = 0;
+            this.LR2 = 0;
+            this.LR3 = 0;
+            this.EPSW1 = 0;
+            this.EPSW2 = 0;
+            this.EPSW3 = 0;
+            this.EA = 0;
+            this.AR = 0;
+            this.DSR = 0;
         }
 
         public byte GetRegisterByIndex(byte Index)
