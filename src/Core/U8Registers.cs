@@ -4,6 +4,34 @@ using System.Text;
 
 namespace U8Disasm.Core
 {
+    public class U8PSW
+    {
+        //  PSW:
+        //  7: C - Carry flag
+        //  6: Z - Zero flag
+        //  5: S - Sign flag
+        //  4: OV - overflow flag
+        //  3: MIE - Mask interrupt enable bit
+        //  2: HC - Half carry flag
+        //  1: ELEVEL[2:1] - Exception level
+        //  0: ELEVEL[1:0]
+
+        public bool C = false;
+        public bool Z = false;
+        public bool S = false;
+        public bool OV = false;
+        public bool MIE = false;
+        public bool HC = false;
+        public byte ELEVEL = 0;
+
+        public U8PSW()
+        {
+
+        }
+
+        // TODO: add cstr with input
+    }
+
     public class U8Registers
     {
         public byte r0 = 0;
@@ -214,7 +242,7 @@ namespace U8Disasm.Core
 
         public ushort PC;   // PC (Program Counter) 16bit
         public byte CSR;    // CSR (Code Segment register) 4bit
-        public byte PSW;    // PSW(Program Status word) 8bit
+        public U8PSW PSW;    // PSW(Program Status word) 8bit
         public ushort SP;   // SP (Stack pointer) 16bit (set to 00h~01h at start)
 
         public ushort LR;   // LR 16 bit (save PC on subroutine)
@@ -230,19 +258,10 @@ namespace U8Disasm.Core
         public ushort AR;   // AR register 16bit (U8 Core Exclusive, no access for programs)
         public byte DSR;    // DSR (Data Segment Register) 8 bit
 
-        //  PSW:
-        //  7: C - Carry flag
-        //  6: Z - Zero flag
-        //  5: S - Sign flag
-        //  4: OV - overflow flag
-        //  3: MIE - Mask interrupt enable bit
-        //  2: HC - Half carry flag
-        //  1: ELEVEL[2:1] - Exception level
-        //  0: ELEVEL[1:0]
 
         public U8Registers()
         {
-
+            this.PSW = new U8PSW();
         }
 
         public byte GetRegisterByIndex(byte Index)

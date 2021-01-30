@@ -27,10 +27,143 @@ namespace U8Disasm.Core
             this.ROM = ROM;
         }
 
+        private void AddERegEReg(U8Cmd cmd)
+        {
+            // This inst adds the contents of the second word register to the those of the 
+            // first and stores the result in the first
+            var sum = this.Registers.GetERegisterByIndex((byte)cmd.Op1) + this.Registers.GetERegisterByIndex((byte)cmd.Op2);
+            this.Registers.SetERegisterByIndex((byte)cmd.Op1, (ushort)sum);
+            this.Registers.PC += 2;
+
+            // TODO: this.Registers.PSW.C
+            this.Registers.PSW.Z = sum == 0;
+            // TODO: this.Registers.PSW.S = TRACK TOP BIT OF RESULT
+            this.Registers.PSW.OV = sum > ushort.MaxValue;
+            // TODO: this.Registers.PSW.HC = idk ;/
+        }
+        private void AddERegO(U8Cmd cmd)
+        {
+            // This inst adds the sign-extended immediate vlaue to the contents of the specified
+            // word-sized register and stores the result in the register.
+            var sum = 0;
+            if (U8Decoder.isNegative7Bit((byte)cmd.Op2) == 1)
+                sum = this.Registers.GetERegisterByIndex((byte)cmd.Op1) - U8Decoder.ABS7Bit((byte)cmd.Op2);
+            else
+                sum = this.Registers.GetERegisterByIndex((byte)cmd.Op1) + U8Decoder.ABS7Bit((byte)cmd.Op2);
+            this.Registers.SetERegisterByIndex((byte)cmd.Op1, (ushort)sum);
+            this.Registers.PC += 2;
+
+            // TODO: this.Registers.PSW.C
+            this.Registers.PSW.Z = sum == 0;
+            // TODO: this.Registers.PSW.S = TRACK TOP BIT OF RESULT
+            this.Registers.PSW.OV = sum > ushort.MaxValue;
+            // TODO: this.Registers.PSW.HC = idk ;/
+        }
+        private void AddRegReg(U8Cmd cmd)
+        {
+            // This inst adds the content of the specified byte-sized object to
+            // those of the specified byte-sized register and stores the result in that register
+            var sum = this.Registers.GetRegisterByIndex((byte)cmd.Op1) + this.Registers.GetRegisterByIndex((byte)cmd.Op2);
+            this.Registers.SetRegisterByIndex((byte)cmd.Op1, (byte)sum);
+            this.Registers.PC += 2;
+
+            // TODO: this.Registers.PSW.C
+            this.Registers.PSW.Z = sum == 0;
+            // TODO: this.Registers.PSW.S = TRACK TOP BIT OF RESULT
+            this.Registers.PSW.OV = sum > byte.MaxValue;
+            // TODO: this.Registers.PSW.HC = idk ;/
+        }
+        private void AddRegO(U8Cmd cmd)
+        {
+            // This inst adds the content of the specified byte-sized object to
+            // those of the specified byte-sized register and stores the result in that register
+            var sum = 0;
+                sum = this.Registers.GetRegisterByIndex((byte)cmd.Op1) + (byte)cmd.Op2;
+            this.Registers.SetRegisterByIndex((byte)cmd.Op1, (byte)sum);
+            this.Registers.PC += 2;
+
+            // TODO: this.Registers.PSW.C
+            this.Registers.PSW.Z = sum == 0;
+            // TODO: this.Registers.PSW.S = TRACK TOP BIT OF RESULT
+            this.Registers.PSW.OV = sum > byte.MaxValue;
+            // TODO: this.Registers.PSW.HC = idk ;/
+        }
+        private void AddSpO(U8Cmd cmd)
+        {
+            // This inst adds the sign-extended signed8 to the contents of the stack pointer
+            // and stores the result in the stack pointer
+            if (U8Decoder.isNegative7Bit((byte)cmd.Op1) == 1)
+                this.Registers.SP -= U8Decoder.ABS7Bit((byte)cmd.Op1); // TODO: verify, may need Op2!!!
+            else
+                this.Registers.SP += U8Decoder.ABS7Bit((byte)cmd.Op1);
+             
+            this.Registers.PC += 2;
+        }
+        private void AddcRegReg(U8Cmd cmd)
+        {
+            // This inst adds the contents of the specified byte-sized register,
+            // the specified byte-sized objectm and the carry flag C and stores the result in the register
+            var sum = this.Registers.GetRegisterByIndex((byte)cmd.Op1) +
+                this.Registers.GetRegisterByIndex((byte)cmd.Op2);
+
+            if (this.Registers.PSW.C)
+                sum++;
+
+            this.Registers.SetRegisterByIndex((byte)cmd.Op1, (byte)sum);
+            this.Registers.PC += 2;
+
+            // TODO: C
+            this.Registers.PSW.Z = this.Registers.PSW.Z == true && sum == 0;
+            // TODO: S
+            this.Registers.PSW.OV = sum > byte.MaxValue;
+            // TODO: HC
+        }
+        private void AddcRegO(U8Cmd cmd)
+        {
+            // This inst adds the contents of the specified byte-sized register,
+            // the specified byte-sized objectm and the carry flag C and stores the result in the register
+            var sum = this.Registers.GetRegisterByIndex((byte)cmd.Op1) + (byte)cmd.Op2;
+
+            if (this.Registers.PSW.C)
+                sum++;
+
+            this.Registers.SetRegisterByIndex((byte)cmd.Op1, (byte)sum);
+            this.Registers.PC += 2;
+
+            // TODO: C
+            this.Registers.PSW.Z = this.Registers.PSW.Z == true && sum == 0;
+            // TODO: S
+            this.Registers.PSW.OV = sum > byte.MaxValue;
+            // TODO: HC
+        }
         public void Execute(U8Cmd cmd)
         {
             switch (cmd.Type)
             {
+                case U8Decoder.U8_ADD_ER:
+                    AddERegEReg(cmd);
+                    break;
+                case U8Decoder.U8_ADD_ER_O:
+                    AddERegO(cmd);
+                    break;
+                case U8Decoder.U8_ADD_R:
+                    AddRegReg(cmd);
+                    break;
+                case U8Decoder.U8_ADD_O:
+                    AddRegO(cmd);
+                    break;
+                case U8Decoder.U8_ADD_SP_O:
+                    AddSpO(cmd);
+                    break;
+                case U8Decoder.U8_ADDC_R:
+                    AddcRegReg(cmd);
+                    break;
+                case U8Decoder.U8_ADDC_O:
+                    AddcRegO(cmd);
+                    break;
+                //case U8Decoder.U8_AND_O:
+                //case U8Decoder.U8_AND_R:
+                // OLD ones
                 case U8Decoder.U8_PUSH_ER:
                 case U8Decoder.U8_PUSH_QR:
                 case U8Decoder.U8_PUSH_R:
@@ -218,22 +351,25 @@ namespace U8Disasm.Core
 
         private void Callhandler(U8Cmd cmd)
         {
-            // save stuff?
-            this.Registers.LR = this.Registers.PC;
-
             if (cmd.Type == U8Decoder.U8_BL_AD)
             {
+                // return LCSR:LR
+                this.Registers.LR = (ushort)(this.Registers.PC+4);
+
                 // calls CSR:addr
                 this.Registers.PC = (ushort)((this.Registers.CSR*0x10000) + cmd.sWord);
-                // return LCSR:LR
             }
             else if (cmd.Type == U8Decoder.U8_BL_ER)
             {
+                // save return
+                this.Registers.LR = (ushort)(this.Registers.PC + 2);
+
                 // calls ER register?
                 if (this.Memory != null)
                     this.Registers.PC = this.Memory[this.Registers.GetERegisterByIndex((byte)cmd.Op1)];
             }
             
         }
+
     }
 }
