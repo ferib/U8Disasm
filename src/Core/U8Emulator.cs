@@ -314,7 +314,74 @@ namespace U8Disasm.Core
             this.Registers.PSW.OV = res > byte.MaxValue;
             // HC
         }
+        private void CPLC(U8Cmd cmd)
+        {
+            // this instr inverst the contents of the carry flag
+            this.Registers.PSW.C = !this.Registers.PSW.C;
+            this.Registers.PC += 2;
+        }
+        private void DAAReg(U8Cmd cmd)
+        {
+            // this inst convert the contents of the specified byte-sized register into a binary
+            // coded decimal value by adding the appropriate value, based on the content of the register
+            // as well as the C and HC flags
 
+            byte res = this.Registers.GetRegisterByIndex((byte)cmd.Op1);
+            // TODO: implement this weird adjustment table?
+
+            // C
+            this.Registers.PSW.Z = res == 0;
+            // S
+            // HC
+            this.Registers.PC += 2;
+        }
+        private void DASReg(U8Cmd cmd)
+        {
+            // this inst convert the contents of the specified byte-sized register into a binary
+            // coded decimal value by subtracting the approperiate value, based on the
+            // contents of the register as well as the C and HC flags
+
+            byte res = this.Registers.GetRegisterByIndex((byte)cmd.Op1);
+            // TODO: implement this weird adjustment table?
+
+            // C
+            this.Registers.PSW.Z = res == 0;
+            // S
+            // HC
+            this.Registers.PC += 2;
+        }
+        private void DECea(U8Cmd cmd)
+        {
+            // this inst subtracts one from the EA register
+            this.Registers.EA--;
+            this.Registers.PSW.Z = this.Registers.EA == 0;
+            // S
+            this.Registers.PSW.OV = this.Registers.EA > ushort.MaxValue;
+            // HC
+            this.Registers.PC += 2;
+        }
+        private void DI(U8Cmd cmd)
+        {
+            // this inst sets the Master Interrupt Enable to 0 to disable maskable interrupts
+            this.Registers.PSW.MIE = false;
+            this.Registers.PC += 2;
+        }
+        private void DIVEReg(U8Cmd cmd)
+        {
+            // this inst divides the contents of the specified word-sized register by those of the
+            // specified byte-sized register, stores the 16-bit divided in the former, and stores the
+            // 8bit reminder in the latter
+            this.Registers.PSW.C = this.Registers.GetRegisterByIndex((byte)cmd.Op2) == 0;
+            this.Registers.PSW.Z = this.Registers.GetRegisterByIndex((byte)cmd.Op1) == 0;
+            if (!this.Registers.PSW.C)
+            {
+                var div = (ushort)(this.Registers.GetERegisterByIndex((byte)cmd.Op1) / this.Registers.GetRegisterByIndex((byte)cmd.Op2)); //ERn = ERn / Rm
+                var mod = (byte)(this.Registers.GetERegisterByIndex((byte)cmd.Op1) % this.Registers.GetRegisterByIndex((byte)cmd.Op2)); // Rm = ERn % Rm
+                this.Registers.SetERegisterByIndex((byte)cmd.Op1, div);
+                this.Registers.SetRegisterByIndex((byte)cmd.Op2, mod);
+            }
+            this.Registers.PC += 2;
+        }
         public void Execute(U8Cmd cmd)
         {
             switch (cmd.Type)
@@ -376,6 +443,20 @@ namespace U8Disasm.Core
                     break;
                 case U8Decoder.U8_CMPC_R:
                     CMPCRegReg(cmd);
+                    break;
+                case U8Decoder.U8_CPLC:
+                    CPLC(cmd);
+                    break;
+                // case U8Decoder.U8_DAA
+                // case U8Decoder.U8_DAS
+                case U8Decoder.U8_DEC_EA:
+                    DECea(cmd);
+                    break;
+                case U8Decoder.U8_DI:
+                    DI(cmd);
+                    break;
+                case U8Decoder.U8_DIV_ER:
+                    DIVEReg(cmd);
                     break;
                 default:
                     break;
