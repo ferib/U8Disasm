@@ -843,6 +843,57 @@ namespace U8Disasm.Core
             // No operation
             this.Registers.PC += 2;
         }
+
+        private void ORRegReg(U8Cmd cmd)
+        {
+            // this instr ORs the contents of the specified byte-sized register and object and stores the result
+            // in the register
+            var res = this.Registers.GetRegisterByIndex((byte)cmd.Op1) | this.Registers.GetRegisterByIndex((byte)cmd.Op2);
+            this.Registers.SetRegisterByIndex((byte)cmd.Op1, (byte)res);
+            this.Registers.PSW.Z = res == 0;
+            // S
+            this.Registers.PC += 2;
+        }
+        private void ORRegO(U8Cmd cmd)
+        {
+            // this instr ORs the contents of the specified byte-sized register and object and stores the result
+            // in the register
+            this.Registers.SetRegisterByIndex((byte)cmd.Op1, (byte)cmd.Op2);
+            this.Registers.PSW.Z = (byte)cmd.Op2 == 0;
+            // S
+            this.Registers.PC += 2;
+        }
+
+        // TODO: POP & PUSH
+
+        private void RBDBitaddr(U8Cmd cmd)
+        {
+            // TODO
+        }
+
+        private void RBRegBit(U8Cmd cmd)
+        {
+            // TODO
+        }
+
+        private void RC(U8Cmd cmd)
+        {
+            // this instr resets the carry flag to 0
+            this.Registers.PSW.C = false;
+            this.Registers.PC += 2;
+        }
+
+        private void RT(U8Cmd cmd)
+        {
+            // this instr is for returning from a subroutine called with a BL instr.
+            // it restores the address of the instruction the BL instruction by loading the
+            // code segment register from the local code segment (LCSR) and the program
+            // counter (PC) from the link register (LR)
+            this.Registers.CSR = this.Registers.LCSR;
+            this.Registers.PC = this.Registers.LR;
+            this.Registers.PC += 2;
+        }
+
         public void Execute(U8Cmd cmd)
         {
             switch (cmd.Type)
