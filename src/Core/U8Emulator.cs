@@ -12,6 +12,8 @@ namespace U8Disasm.Core
         public byte[] Memory;
         public byte[] ROM;
 
+        private Dictionary<byte, Delegate> HandlerTable;
+
         public U8Emulator()
         {
             // mini emulating
@@ -22,11 +24,178 @@ namespace U8Disasm.Core
         {
             // full emulator (for mah bucket list ;))
             this.Registers = new U8Registers();
-            byte segCount = 0x0F ; // 4 bit counter?
+            byte segCount = 0x0F; // 4 bit counter?
             this.Memory = new byte[segCount * 0x10000];
             this.ROM = ROM;
         }
 
+        public void Initialise()
+        {
+            //this.HandlerTable = new Dictionary<byte, Delegate>
+            //{
+            //    { U8Decoder.U8_ADD_R, ()AddRegReg },
+            //};
+        }
+
+        public void Execute(U8Cmd cmd)
+        {
+            switch (cmd.Type)
+            {
+                case U8Decoder.U8_ADD_ER:
+                    AddERegEReg(cmd);
+                    break;
+                case U8Decoder.U8_ADD_ER_O:
+                    AddERegO(cmd);
+                    break;
+                case U8Decoder.U8_ADD_R:
+                    AddRegReg(cmd);
+                    break;
+                case U8Decoder.U8_ADD_O:
+                    AddRegO(cmd);
+                    break;
+                case U8Decoder.U8_ADD_SP_O:
+                    AddSpO(cmd);
+                    break;
+                case U8Decoder.U8_ADDC_R:
+                    AddcRegReg(cmd);
+                    break;
+                case U8Decoder.U8_ADDC_O:
+                    AddcRegO(cmd);
+                    break;
+                case U8Decoder.U8_AND_O:
+                    AndRegO(cmd);
+                    break;
+                case U8Decoder.U8_AND_R:
+                    AndRegReg(cmd);
+                    break;
+                case U8Decoder.U8_B_AD:
+                    BAddr(cmd);
+                    break;
+                case U8Decoder.U8_B_ER:
+                    BEReg(cmd);
+                    break;
+                // NOTE: BC missing?
+                case U8Decoder.U8_BL_AD:
+                    BLAddr(cmd);
+                    break;
+                case U8Decoder.U8_BL_ER:
+                    BLEReg(cmd);
+                    break;
+                case U8Decoder.U8_BRK:
+                    BRK(cmd);
+                    break;
+                case U8Decoder.U8_CMP_ER:
+                    CMPERegEReg(cmd);
+                    break;
+                case U8Decoder.U8_CMP_R:
+                    CMPRegReg(cmd);
+                    break;
+                case U8Decoder.U8_CMP_O:
+                    CMPRegO(cmd);
+                    break;
+                case U8Decoder.U8_CMPC_O:
+                    CMPCRegO(cmd);
+                    break;
+                case U8Decoder.U8_CMPC_R:
+                    CMPCRegReg(cmd);
+                    break;
+                case U8Decoder.U8_CPLC:
+                    CPLC(cmd);
+                    break;
+                // case U8Decoder.U8_DAA
+                // case U8Decoder.U8_DAS
+                case U8Decoder.U8_DEC_EA:
+                    DECea(cmd);
+                    break;
+                case U8Decoder.U8_DI:
+                    DI(cmd);
+                    break;
+                case U8Decoder.U8_DIV_ER:
+                    DIVEReg(cmd);
+                    break;
+                case U8Decoder.U8_EI:
+                    EI(cmd);
+                    break;
+                //case U8Decoder.U8_EXTBW_ER:
+                case U8Decoder.U8_INC_EA:
+                    INCea(cmd);
+                    break;
+                //case U8Decoder.U8_L
+                case U8Decoder.U8_L_ER_EA:
+                    LERegEA(cmd);
+                    break;
+                case U8Decoder.U8_L_ER_EAP:
+                    LERegEAP(cmd);
+                    break;
+                case U8Decoder.U8_L_ER_ER:
+                    LERegEReg(cmd);
+                    break;
+                //case U8Decoder.U8_L_ER_D16_ER:
+                //case U8Decoder.U8_L_ER_D6_BP:
+                //case U8Decoder.U8_L_ER_D6_FP:
+                //case U8Decoder.U8_L_ER_DA:
+                case U8Decoder.U8_L_R_EA:
+                    LRegEA(cmd);
+                    break;
+                case U8Decoder.U8_L_R_EAP:
+                    LRegEAP(cmd);
+                    break;
+                case U8Decoder.U8_L_R_ER:
+                    LRegER(cmd);
+                    break;
+                //case U8Decoder.U8_L_R_D16_ER:
+                //case U8Decoder.U8_L_R_D6_BP:
+                //case U8Decoder.U8_L_R_D6_FP:
+                //case U8Decoder.U8_L_R_DA:
+                case U8Decoder.U8_L_XR_EA:
+                    LXRegEA(cmd);
+                    break;
+                case U8Decoder.U8_L_XR_EAP:
+                    LXRegEAP(cmd);
+                    break;
+                case U8Decoder.U8_L_QR_EA:
+                    LQRegEA(cmd);
+                    break;
+                case U8Decoder.U8_L_QR_EAP:
+                    LQRegEAP(cmd);
+                    break;
+                case U8Decoder.U8_LEA_ER:
+                    LEAEReg(cmd);
+                    break;
+                case U8Decoder.U8_LEA_DA:
+                    LEAAddr(cmd);
+                    break;
+                //case U8Decoder.U8_LEA_D16_ER:
+                //case U8Decoder.U8_MOV_CR_R:
+                //case U8Decoder.U8_MOV_CR_EA:
+                //case U8Decoder.U8_MOV_CER_EA:
+                //case U8Decoder.U8_MOV_CQR_EA:
+                //case U8Decoder.U8_MOV_CXR_EA:
+                //case U8Decoder.U8_MOV_CR_EAP:
+                //case U8Decoder.U8_MOV_CER_EAP:
+                //case U8Decoder.U8_MOV_CQR_EAP:
+                //case U8Decoder.U8_MOV_CXR_EAP: // TODO: figure out the C (co-processor) Reg stuff
+                //case U8Decoder.U8_MOV_EA_CR:
+                //case U8Decoder.U8_MOV_EA_CER:
+                //case U8Decoder.U8_MOV_EA_CQR:
+                //case U8Decoder.U8_MOV_EA_CXR:
+                //case U8Decoder.U8_MOV_EAP_CR:
+                //case U8Decoder.U8_MOV_EAP_CER:
+                //case U8Decoder.U8_MOV_EAP_CQR:
+                //case U8Decoder.U8_MOV_EAP_CXR:
+                case U8Decoder.U8_MOV_ECSR_R:
+                case U8Decoder.U8_MOV_R_ECSR:
+                default:
+                    Console.WriteLine($"unimplemented type: {cmd.Type}"); // debugging
+                    break;
+            }
+        }
+
+        // #===============#
+        // #    Handlers   #
+        // #===============#
+
+        #region Handlers
         private void AddERegEReg(U8Cmd cmd)
         {
             // This inst adds the contents of the second word register to the those of the 
@@ -78,7 +247,7 @@ namespace U8Disasm.Core
             // This inst adds the content of the specified byte-sized object to
             // those of the specified byte-sized register and stores the result in that register
             var sum = 0;
-                sum = this.Registers.GetRegisterByIndex((byte)cmd.Op1) + (byte)cmd.Op2;
+            sum = this.Registers.GetRegisterByIndex((byte)cmd.Op1) + (byte)cmd.Op2;
             this.Registers.SetRegisterByIndex((byte)cmd.Op1, (byte)sum);
             this.Registers.PC += 2;
 
@@ -96,9 +265,10 @@ namespace U8Disasm.Core
                 this.Registers.SP -= U8Decoder.ABS7Bit((byte)cmd.Op1); // TODO: verify, may need Op2!!!
             else
                 this.Registers.SP += U8Decoder.ABS7Bit((byte)cmd.Op1);
-             
+
             this.Registers.PC += 2;
         }
+
         private void AddcRegReg(U8Cmd cmd)
         {
             // This inst adds the contents of the specified byte-sized register,
@@ -174,11 +344,11 @@ namespace U8Disasm.Core
         {
             // this inst is for calling routine
             // save addr of next instruction in LR and the CSR into LCSR and then jump within same physical seg
-            
+
             // if this sub calls another sub, it must use PUSH inst to save LR and LCSR reg to the stack
             // before the first such call and POP inst to restore the LR and LCSR registers after the last one
-            
-            if(this.Registers.LR == 0)
+
+            if (this.Registers.LR == 0)
             {
                 // TODO:
                 // push(LR)
@@ -212,7 +382,7 @@ namespace U8Disasm.Core
         }
         private void BRK(U8Cmd cmd)
         {
-            if(this.Registers.PSW.ELEVEL > 1)
+            if (this.Registers.PSW.ELEVEL > 1)
             {
                 // CPU system reset
                 this.Registers.Initialise();
@@ -222,13 +392,13 @@ namespace U8Disasm.Core
                     this.Registers.SP = BitConverter.ToUInt16(this.Memory, 2);
                 }
             }
-            else if(this.Registers.PSW.ELEVEL < 2)
+            else if (this.Registers.PSW.ELEVEL < 2)
             {
                 // equivalent of nonmaskable interrupt. CPU then loads the PC with the word data from vector
                 // tabvle address 4 at the beginning of the code/program memory space
                 // TODO: add vector table!
             }
-            
+
         }
         private void CMPERegEReg(U8Cmd cmd)
         {
@@ -353,11 +523,11 @@ namespace U8Disasm.Core
         private void DECea(U8Cmd cmd)
         {
             // this inst subtracts one from the EA register
-            int res = this.Registers.EA-1;
+            int res = this.Registers.EA - 1;
             this.Registers.EA = (byte)res;
             this.Registers.PSW.Z = this.Registers.EA == 0;
             // S
-            this.Registers.PSW.OV = (byte)(res+1) == 0;
+            this.Registers.PSW.OV = (byte)(res + 1) == 0;
             // HC
             this.Registers.PC += 2;
         }
@@ -659,7 +829,7 @@ namespace U8Disasm.Core
             // status word (EPSW1~EPSW3) register for the current exception level (ELEVEL)
             // setting if ELBEL is nonzero
             // if ELEVEL is zero, the inst does nothing
-            if(this.Registers.PSW.ELEVEL != 0)
+            if (this.Registers.PSW.ELEVEL != 0)
                 this.Registers.SetEPSWByIndex(this.Registers.PSW.ELEVEL, this.Registers.GetRegisterByIndex((byte)cmd.Op2));
 
             this.Registers.PC += 2;
@@ -776,7 +946,7 @@ namespace U8Disasm.Core
             // this instr loads the specified byte-sized register from the exception program
             // status word (EPSW1 to EPSW3) register for the current exception level (ELEVEL)
             // setting if ELEVEL is nonzero
-            if(this.Registers.PSW.ELEVEL != 0)
+            if (this.Registers.PSW.ELEVEL != 0)
             {
                 this.Registers.SetRegisterByIndex((byte)cmd.Op1, (byte)this.Registers.GetEPSWByIndex(this.Registers.PSW.ELEVEL));
             }
@@ -1027,9 +1197,9 @@ namespace U8Disasm.Core
         {
             // this insts XORs the contents of the specified byte-sized register and object and
             // stores the result in the register
-            this.Registers.SetRegisterByIndex((byte)cmd.Op1, 
+            this.Registers.SetRegisterByIndex((byte)cmd.Op1,
                 (byte)(this.Registers.GetRegisterByIndex((byte)cmd.Op1) ^ this.Registers.GetRegisterByIndex((byte)cmd.Op2)));
-            
+
             this.Registers.PSW.Z = this.Registers.GetRegisterByIndex((byte)cmd.Op1) == 0;
             // S
             this.Registers.PC += 2;
@@ -1045,167 +1215,8 @@ namespace U8Disasm.Core
             this.Registers.PSW.Z = this.Registers.GetRegisterByIndex((byte)cmd.Op1) == 0;
             // S
             this.Registers.PC += 2;
-            this.Registers.PC += 2;
         }
-
-
-        public void Execute(U8Cmd cmd)
-        {
-            switch (cmd.Type)
-            {
-                case U8Decoder.U8_ADD_ER:
-                    AddERegEReg(cmd);
-                    break;
-                case U8Decoder.U8_ADD_ER_O:
-                    AddERegO(cmd);
-                    break;
-                case U8Decoder.U8_ADD_R:
-                    AddRegReg(cmd);
-                    break;
-                case U8Decoder.U8_ADD_O:
-                    AddRegO(cmd);
-                    break;
-                case U8Decoder.U8_ADD_SP_O:
-                    AddSpO(cmd);
-                    break;
-                case U8Decoder.U8_ADDC_R:
-                    AddcRegReg(cmd);
-                    break;
-                case U8Decoder.U8_ADDC_O:
-                    AddcRegO(cmd);
-                    break;
-                case U8Decoder.U8_AND_O:
-                    AndRegO(cmd);
-                    break;
-                case U8Decoder.U8_AND_R:
-                    AndRegReg(cmd);
-                    break;
-                case U8Decoder.U8_B_AD:
-                    BAddr(cmd);
-                    break;
-                case U8Decoder.U8_B_ER:
-                    BEReg(cmd);
-                    break;
-                // NOTE: BC missing?
-                case U8Decoder.U8_BL_AD:
-                    BLAddr(cmd);
-                    break;
-                case U8Decoder.U8_BL_ER:
-                    BLEReg(cmd);
-                    break;
-                case U8Decoder.U8_BRK:
-                    BRK(cmd);
-                    break;
-                case U8Decoder.U8_CMP_ER:
-                    CMPERegEReg(cmd);
-                    break;
-                case U8Decoder.U8_CMP_R:
-                    CMPRegReg(cmd);
-                    break;
-                case U8Decoder.U8_CMP_O:
-                    CMPRegO(cmd);
-                    break;
-                case U8Decoder.U8_CMPC_O:
-                    CMPCRegO(cmd);
-                    break;
-                case U8Decoder.U8_CMPC_R:
-                    CMPCRegReg(cmd);
-                    break;
-                case U8Decoder.U8_CPLC:
-                    CPLC(cmd);
-                    break;
-                // case U8Decoder.U8_DAA
-                // case U8Decoder.U8_DAS
-                case U8Decoder.U8_DEC_EA:
-                    DECea(cmd);
-                    break;
-                case U8Decoder.U8_DI:
-                    DI(cmd);
-                    break;
-                case U8Decoder.U8_DIV_ER:
-                    DIVEReg(cmd);
-                    break;
-                case U8Decoder.U8_EI:
-                    EI(cmd);
-                    break;
-                //case U8Decoder.U8_EXTBW_ER:
-                case U8Decoder.U8_INC_EA:
-                    INCea(cmd);
-                    break;
-                //case U8Decoder.U8_L
-                case U8Decoder.U8_L_ER_EA:
-                    LERegEA(cmd);
-                    break;
-                case U8Decoder.U8_L_ER_EAP:
-                    LERegEAP(cmd);
-                    break;
-                case U8Decoder.U8_L_ER_ER:
-                    LERegEReg(cmd);
-                    break;
-                //case U8Decoder.U8_L_ER_D16_ER:
-                //case U8Decoder.U8_L_ER_D6_BP:
-                //case U8Decoder.U8_L_ER_D6_FP:
-                //case U8Decoder.U8_L_ER_DA:
-                case U8Decoder.U8_L_R_EA:
-                    LRegEA(cmd);
-                    break;
-                case U8Decoder.U8_L_R_EAP:
-                    LRegEAP(cmd);
-                    break;
-                case U8Decoder.U8_L_R_ER:
-                    LRegER(cmd);
-                    break;
-                //case U8Decoder.U8_L_R_D16_ER:
-                //case U8Decoder.U8_L_R_D6_BP:
-                //case U8Decoder.U8_L_R_D6_FP:
-                //case U8Decoder.U8_L_R_DA:
-                case U8Decoder.U8_L_XR_EA:
-                    LXRegEA(cmd);
-                    break;
-                case U8Decoder.U8_L_XR_EAP:
-                    LXRegEAP(cmd);
-                    break;
-                case U8Decoder.U8_L_QR_EA:
-                    LQRegEA(cmd);
-                    break;
-                case U8Decoder.U8_L_QR_EAP:
-                    LQRegEAP(cmd);
-                    break;
-                case U8Decoder.U8_LEA_ER:
-                    LEAEReg(cmd);
-                    break;
-                case U8Decoder.U8_LEA_DA:
-                    LEAAddr(cmd);
-                    break;
-                //case U8Decoder.U8_LEA_D16_ER:
-                //case U8Decoder.U8_MOV_CR_R:
-                //case U8Decoder.U8_MOV_CR_EA:
-                //case U8Decoder.U8_MOV_CER_EA:
-                //case U8Decoder.U8_MOV_CQR_EA:
-                //case U8Decoder.U8_MOV_CXR_EA:
-                //case U8Decoder.U8_MOV_CR_EAP:
-                //case U8Decoder.U8_MOV_CER_EAP:
-                //case U8Decoder.U8_MOV_CQR_EAP:
-                //case U8Decoder.U8_MOV_CXR_EAP: // TODO: figure out the C (co-processor) Reg stuff
-                //case U8Decoder.U8_MOV_EA_CR:
-                //case U8Decoder.U8_MOV_EA_CER:
-                //case U8Decoder.U8_MOV_EA_CQR:
-                //case U8Decoder.U8_MOV_EA_CXR:
-                //case U8Decoder.U8_MOV_EAP_CR:
-                //case U8Decoder.U8_MOV_EAP_CER:
-                //case U8Decoder.U8_MOV_EAP_CQR:
-                //case U8Decoder.U8_MOV_EAP_CXR:
-                case U8Decoder.U8_MOV_ECSR_R:
-                case U8Decoder.U8_MOV_R_ECSR:
-                default:
-                    Console.WriteLine($"unimplemented type: {cmd.Type}"); // debugging
-                    break;
-            }
-        }
-
-        // #===============#
-        // #    Handlers   #
-        // #===============#
+        #endregion Handlers
 
     }
 }
