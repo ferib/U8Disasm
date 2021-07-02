@@ -103,23 +103,23 @@ namespace U8Disasm.Analyser
             //Cmds.Add(opcode);
 
             // check branches
-            switch (Cmd.Type)
+            switch ((U8_OP)Cmd.Type)
             {
-                case U8Decoder.U8_BGE_RAD: // conditional branch
-                case U8Decoder.U8_BLT_RAD:
-                case U8Decoder.U8_BGT_RAD:
-                case U8Decoder.U8_BLE_RAD:
-                case U8Decoder.U8_BGES_RAD:
-                case U8Decoder.U8_BLTS_RAD:
-                case U8Decoder.U8_BGTS_RAD:
-                case U8Decoder.U8_BLES_RAD:
-                case U8Decoder.U8_BNE_RAD:
-                case U8Decoder.U8_BEQ_RAD:
-                case U8Decoder.U8_BNV_RAD:
-                case U8Decoder.U8_BOV_RAD:
-                case U8Decoder.U8_BPS_RAD:
-                case U8Decoder.U8_BNS_RAD:
-                case U8Decoder.U8_BAL_RAD:
+                case U8_OP.BGE_RAD: // conditional branch
+                case U8_OP.BLT_RAD:
+                case U8_OP.BGT_RAD:
+                case U8_OP.BLE_RAD:
+                case U8_OP.BGES_RAD:
+                case U8_OP.BLTS_RAD:
+                case U8_OP.BGTS_RAD:
+                case U8_OP.BLES_RAD:
+                case U8_OP.BNE_RAD:
+                case U8_OP.BEQ_RAD:
+                case U8_OP.BNV_RAD:
+                case U8_OP.BOV_RAD:
+                case U8_OP.BPS_RAD:
+                case U8_OP.BNS_RAD:
+                case U8_OP.BAL_RAD:
                     // if cond ? radr : PC+=2
                     // if op1 < 0 then negative else positive;
                     // conditions? dont care actually ;D
@@ -127,7 +127,7 @@ namespace U8Disasm.Analyser
                     newBlock.NextBlock = Cmd.Address + 2; // continue
                     isEndOfBlock = true;
                     break;
-                case U8Decoder.U8_B_AD: // branch
+                case U8_OP.B_AD: // branch
                     // PC = cadr[15:0] (op1) + second word
                     newBlock.NextBlock = (Cmd.Op1 * 0x10000) + Cmd.sWord; // takes jump
                     newBlock.JumpsToBlock = -1; // newBlock.JumpsToBlock; // dont set so we know its forced?
@@ -146,12 +146,12 @@ namespace U8Disasm.Analyser
                 //    isEndOfBlock = true;
                 //    break;
 
-                case U8Decoder.U8_B_ER:
+                case U8_OP.B_ER:
                     // this jumps to ER? whats in ER?
                     newBlock.NextBlock = Cmd.Address += 2; // continue
                     isEndOfBlock = true;
                     break;
-                case U8Decoder.U8_RT: // return from subroutine?
+                case U8_OP.RT: // return from subroutine?
                     isEndOfBlock = true; //  there is no next ;D
                     break;
                 default:

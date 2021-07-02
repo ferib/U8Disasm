@@ -40,75 +40,75 @@ namespace U8Disasm.Decompiler
                 {
                     switch(cmd.Type)
                     {
-                        case U8Decoder.U8_PUSH_ER:
-                        case U8Decoder.U8_PUSH_QR:
-                        case U8Decoder.U8_PUSH_R:
-                        case U8Decoder.U8_PUSH_RL:
-                        case U8Decoder.U8_PUSH_XR:
+                        case U8_OP.PUSH_ER:
+                        case U8_OP.PUSH_QR:
+                        case U8_OP.PUSH_R:
+                        case U8_OP.PUSH_RL:
+                        case U8_OP.PUSH_XR:
                             PushHandler(cmd);
                             break;
-                        case U8Decoder.U8_POP_ER:
-                        case U8Decoder.U8_POP_QR:
-                        case U8Decoder.U8_POP_R:
-                        case U8Decoder.U8_POP_RL:
-                        case U8Decoder.U8_POP_XR:
+                        case U8_OP.POP_ER:
+                        case U8_OP.POP_QR:
+                        case U8_OP.POP_R:
+                        case U8_OP.POP_RL:
+                        case U8_OP.POP_XR:
                             PopHandler(cmd);
                             break;
-                        case U8Decoder.U8_SUBC_R:
-                        case U8Decoder.U8_SUB_R:
+                        case U8_OP.SUBC_R:
+                        case U8_OP.SUB_R:
                             SubHandler(cmd);
                             break;
-                        case U8Decoder.U8_ADD_SP_O: // SP += value
+                        case U8_OP.ADD_SP_O: // SP += value
                             AddHandler(cmd); // value ranged between -128 and +127
                             break;
-                        case U8Decoder.U8_MOV_SP_ER:
-                        case U8Decoder.U8_MOV_ER_SP:
+                        case U8_OP.MOV_SP_ER:
+                        case U8_OP.MOV_ER_SP:
                             MovHandler(cmd); // I asume ONLY this will be used to save/restore the SP
                             break;
-                        case U8Decoder.U8_BL_AD:
-                        case U8Decoder.U8_BL_ER:
+                        case U8_OP.BL_AD:
+                        case U8_OP.BL_ER:
                             Callhandler(cmd);
                             break;
-                        case U8Decoder.U8_DEC_EA:
+                        case U8_OP.DEC_EA:
                             EA--;
                             break;
-                        case U8Decoder.U8_MOV_CER_EAP: // all increase EA after execution
-                        case U8Decoder.U8_MOV_CR_EAP:
-                        case U8Decoder.U8_MOV_CXR_EAP:
-                        case U8Decoder.U8_MOV_CQR_EAP:
-                        case U8Decoder.U8_L_ER_EAP:
-                        case U8Decoder.U8_L_R_EAP:
-                        case U8Decoder.U8_L_XR_EAP:
-                        case U8Decoder.U8_L_QR_EAP:
-                        case U8Decoder.U8_ST_ER_EAP:
-                        case U8Decoder.U8_ST_R_EAP:
-                        case U8Decoder.U8_ST_XR_EAP:
-                        case U8Decoder.U8_ST_QR_EAP:
-                        case U8Decoder.U8_INC_EA:
+                        case U8_OP.MOV_CER_EAP: // all increase EA after execution
+                        case U8_OP.MOV_CR_EAP:
+                        case U8_OP.MOV_CXR_EAP:
+                        case U8_OP.MOV_CQR_EAP:
+                        case U8_OP.L_ER_EAP:
+                        case U8_OP.L_R_EAP:
+                        case U8_OP.L_XR_EAP:
+                        case U8_OP.L_QR_EAP:
+                        case U8_OP.ST_ER_EAP:
+                        case U8_OP.ST_R_EAP:
+                        case U8_OP.ST_XR_EAP:
+                        case U8_OP.ST_QR_EAP:
+                        case U8_OP.INC_EA:
                             EA++;
                             break;
-                        case U8Decoder.U8_MOV_EAP_CER: // inc EA
-                        case U8Decoder.U8_MOV_EAP_CR:
-                        case U8Decoder.U8_MOV_EAP_CXR:
-                        case U8Decoder.U8_MOV_EAP_CQR:
+                        case U8_OP.MOV_EAP_CER: // inc EA
+                        case U8_OP.MOV_EAP_CR:
+                        case U8_OP.MOV_EAP_CXR:
+                        case U8_OP.MOV_EAP_CQR:
                             MovHandler(cmd);
                             EA++;
                             break;
-                        case U8Decoder.U8_MOV_EA_CER:
-                        case U8Decoder.U8_MOV_EA_CR:
-                        case U8Decoder.U8_MOV_EA_CXR:
-                        case U8Decoder.U8_MOV_EA_CQR:
+                        case U8_OP.MOV_EA_CER:
+                        case U8_OP.MOV_EA_CR:
+                        case U8_OP.MOV_EA_CXR:
+                        case U8_OP.MOV_EA_CQR:
                             MovHandler(cmd);
                             break;
-                        case U8Decoder.U8_LEA_ER:
+                        case U8_OP.LEA_ER:
                             // loads EA with ERm
                             // TODO: EA = [erX]
                             break;
-                        case U8Decoder.U8_LEA_DA:
+                        case U8_OP.LEA_DA:
                             // loads EA with sword
                             EA = cmd.sWord;
                             break;
-                        case U8Decoder.U8_LEA_D16_ER:
+                        case U8_OP.LEA_D16_ER:
                             // loads EA with Disp16[ERm]
                             EA = (ushort)((cmd.Op1 * 0x10000) + cmd.sWord); // TODO: verify (= 0000h[erX])
                             break;
@@ -125,19 +125,19 @@ namespace U8Disasm.Decompiler
             // another switch to keep it clean?
             switch (cmd.Type)
             {
-                case U8Decoder.U8_PUSH_R: // 8bit
+                case U8_OP.PUSH_R: // 8bit
                     StackPtr -= 2;
                     break;
-                case U8Decoder.U8_PUSH_ER: // 16 bit
+                case U8_OP.PUSH_ER: // 16 bit
                     StackPtr -= 4;
                     break;
-                case U8Decoder.U8_PUSH_XR: // 32 bit
+                case U8_OP.PUSH_XR: // 32 bit
                     StackPtr -= 8;
                     break;
-                case U8Decoder.U8_PUSH_QR: // 64 bit
+                case U8_OP.PUSH_QR: // 64 bit
                     StackPtr -= 16;
                     break;
-                case U8Decoder.U8_PUSH_RL: // wtf? - assume thats a 8bit?
+                case U8_OP.PUSH_RL: // wtf? - assume thats a 8bit?
                     StackPtr -= 2;
                     break;
                 default:
@@ -151,19 +151,19 @@ namespace U8Disasm.Decompiler
             // another switch to keep it clean?
             switch(cmd.Type)
             {
-                case U8Decoder.U8_POP_R: // 8bit
+                case U8_OP.POP_R: // 8bit
                     StackPtr += 2;
                     break;
-                case U8Decoder.U8_POP_ER: // 16 bit
+                case U8_OP.POP_ER: // 16 bit
                     StackPtr += 4;
                     break;
-                case U8Decoder.U8_POP_XR: // 32 bit
+                case U8_OP.POP_XR: // 32 bit
                     StackPtr += 8;
                     break;
-                case U8Decoder.U8_POP_QR: // 64 bit
+                case U8_OP.POP_QR: // 64 bit
                     StackPtr += 16;
                     break;
-                case U8Decoder.U8_POP_RL: // wtf? - assume thats a 8bit?
+                case U8_OP.POP_RL: // wtf? - assume thats a 8bit?
                     StackPtr += 2;
                     break;
                 default:
@@ -174,7 +174,7 @@ namespace U8Disasm.Decompiler
         private void SubHandler(U8Cmd cmd)
         {
             // check subtraction from stack
-            if(cmd.Type == U8Decoder.U8_MOV_SP_ER)
+            if(cmd.Type == U8_OP.MOV_SP_ER)
             {
                 StackPtr = EA;
             }
@@ -197,12 +197,12 @@ namespace U8Disasm.Decompiler
         {
             // saves the contents of the SP int the specified word-sized register
 
-            if (cmd.Type == U8Decoder.U8_MOV_SP_ER)
+            if (cmd.Type == U8_OP.MOV_SP_ER)
             {
                 // restore stack ptr
                 //StackPtr = [cmd.Op2]; // memory location?
             } 
-            else if (cmd.Type == U8Decoder.U8_MOV_ER_SP)
+            else if (cmd.Type == U8_OP.MOV_ER_SP)
             {
                 // save stack ptr
             }else
@@ -215,11 +215,11 @@ namespace U8Disasm.Decompiler
         private void Callhandler(U8Cmd cmd)
         {
             int destination = -1;
-            if(cmd.Type == U8Decoder.U8_BL_AD)
+            if(cmd.Type == U8_OP.BL_AD)
             {
                 // calls CSR:addr
                 // return LCSR:LR
-            }else if(cmd.Type == U8Decoder.U8_BL_ER)
+            }else if(cmd.Type == U8_OP.BL_ER)
             {
                 // calls ER register?
             }

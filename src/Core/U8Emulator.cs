@@ -12,7 +12,7 @@ namespace U8Disasm.Core
         public byte[] Memory;
         public byte[] ROM;
 
-        private Dictionary<byte, Action<U8Cmd>> HandlerTable;
+        private Dictionary<U8_OP, Action<U8Cmd>> HandlerTable;
 
         public U8Emulator()
         {
@@ -32,10 +32,10 @@ namespace U8Disasm.Core
 
         public void Initialise()
         {
-            this.HandlerTable = new Dictionary<byte, Action<U8Cmd>>
+            this.HandlerTable = new Dictionary<U8_OP, Action<U8Cmd>>
             {
                 #region ActionTable
-                { U8Decoder.U8_ADD_R, (cmd) => {AddRegReg(cmd);} },
+                { U8_OP.ADD_R, (cmd) => {AddRegReg(cmd);} },
                 // TODO: complete list
                 #endregion
             };
@@ -43,8 +43,8 @@ namespace U8Disasm.Core
 
         public void Execute(U8Cmd cmd)
         {
-            if (this.HandlerTable.ContainsKey((byte)cmd.Type))
-                this.HandlerTable[(byte)cmd.Type].Invoke(cmd);
+            if (this.HandlerTable.ContainsKey(cmd.Type))
+                this.HandlerTable[cmd.Type].Invoke(cmd);
             else
                 throw new Exception("opcode not yet supported");
         }
