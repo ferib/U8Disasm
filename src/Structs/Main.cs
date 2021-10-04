@@ -1,10 +1,11 @@
 ﻿using System;
+using U8Disasm.Disassembler;
 
 namespace U8Disasm.Structs
 {
     public struct U8Instruction
     {
-        public uint Id;
+        public U8_OP Id;
         public string Name;
         public int Length;
         public int Operands;
@@ -21,7 +22,7 @@ namespace U8Disasm.Structs
     public struct U8Cmd
     {
         public int Address;     // location in memory
-        public int Type;        // index in instruction table
+        public U8_OP Type;        // index in instruction table
         public UInt16 Opcode;   // instruction word
         public UInt16 Op1;      // first decoded operand
         public UInt16 Op2;      // second decoded operand

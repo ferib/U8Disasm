@@ -103,44 +103,55 @@ namespace U8Disasm.Analyser
             //Cmds.Add(opcode);
 
             // check branches
-            switch (Cmd.Type)
+            switch ((U8_OP)Cmd.Type)
             {
-                case U8Decoder.U8_BGE_RAD: // conditional branch
-                case U8Decoder.U8_BLT_RAD:
-                case U8Decoder.U8_BGT_RAD:
-                case U8Decoder.U8_BLE_RAD:
-                case U8Decoder.U8_BGES_RAD:
-                case U8Decoder.U8_BLTS_RAD:
-                case U8Decoder.U8_BGTS_RAD:
-                case U8Decoder.U8_BLES_RAD:
-                case U8Decoder.U8_BNE_RAD:
-                case U8Decoder.U8_BEQ_RAD:
-                case U8Decoder.U8_BNV_RAD:
-                case U8Decoder.U8_BOV_RAD:
-                case U8Decoder.U8_BPS_RAD:
-                case U8Decoder.U8_BNS_RAD:
-                case U8Decoder.U8_BAL_RAD:
+                case U8_OP.BGE_RAD: // conditional branch
+                case U8_OP.BLT_RAD:
+                case U8_OP.BGT_RAD:
+                case U8_OP.BLE_RAD:
+                case U8_OP.BGES_RAD:
+                case U8_OP.BLTS_RAD:
+                case U8_OP.BGTS_RAD:
+                case U8_OP.BLES_RAD:
+                case U8_OP.BNE_RAD:
+                case U8_OP.BEQ_RAD:
+                case U8_OP.BNV_RAD:
+                case U8_OP.BOV_RAD:
+                case U8_OP.BPS_RAD:
+                case U8_OP.BNS_RAD:
+                case U8_OP.BAL_RAD:
                     // if cond ? radr : PC+=2
                     // if op1 < 0 then negative else positive;
                     // conditions? dont care actually ;D
                     newBlock.JumpsToBlock = Cmd.Address + Cmd.Op1; // takes jump
-                    newBlock.NextBlock = Cmd.Address += 2; // continue
+                    newBlock.NextBlock = Cmd.Address + 2; // continue
                     isEndOfBlock = true;
                     break;
-                case U8Decoder.U8_B_AD: // branch
-                case U8Decoder.U8_BL_AD:
+                case U8_OP.B_AD: // branch
                     // PC = cadr[15:0] (op1) + second word
-                    newBlock.JumpsToBlock = (Cmd.Op1 * 0x10000) + Cmd.sWord; // takes jump
-                    newBlock.NextBlock = -1; // newBlock.JumpsToBlock; // dont set so we know its forced?
+                    newBlock.NextBlock = (Cmd.Op1 * 0x10000) + Cmd.sWord; // takes jump
+                    newBlock.JumpsToBlock = -1; // newBlock.JumpsToBlock; // dont set so we know its forced?
                     isEndOfBlock = true;
                     break;
-                case U8Decoder.U8_B_ER:
-                case U8Decoder.U8_BL_ER:
-                    // jumps to er{op1} - eeeh, idk what that is yet >.<
+
+                //// NOTE: Just ignore them?
+                //case U8Decoder.U8_BL_AD: // caller address
+                //    newBlock.NextBlock = Cmd.Address + 4; // len 2
+                //    newBlock.JumpsToBlock = -1;
+                //    isEndOfBlock = true;
+                //    break;
+                //case U8Decoder.U8_BL_ER: // caller register ER
+                //    newBlock.NextBlock = Cmd.Address + 2; ; // len 1
+                //    newBlock.JumpsToBlock = -1;
+                //    isEndOfBlock = true;
+                //    break;
+
+                case U8_OP.B_ER:
+                    // this jumps to ER? whats in ER?
                     newBlock.NextBlock = Cmd.Address += 2; // continue
                     isEndOfBlock = true;
                     break;
-                case U8Decoder.U8_RT: // return from subroutine?
+                case U8_OP.RT: // return from subroutine?
                     isEndOfBlock = true; //  there is no next ;D
                     break;
                 default:
@@ -188,7 +199,12 @@ namespace U8Disasm.Analyser
                 if (!IsAlreadyDiscovered(this.Blocks[Count].Address))
                 {
                     // TODO: Split blocks based on branch destination addresses (once we get branch fully working hehe)
-                    GetFlowBlocks(Count, ref CurrentSub, ref depth);   // get flow for undiscovered blocks
+
+                    // loop over all blocks at higest tree level
+                    int nextAddress = this.Blocks[Count].Address; // start block TODO: look into this! (basicaly needs a loop instead of recursive func)
+                    while(nextAddress != -1)
+                        nextAddress = GetFlowBlocks(FindBlockIndex(nextAddress), ref CurrentSub, ref depth);   // get flow for undiscovered blocks
+
                     lock (this.Stubs)
                     {
                         List<int> bs = new List<int>();
@@ -205,8 +221,11 @@ namespace U8Disasm.Analyser
         }
 
         // get all blocks based on its flow
-        private void GetFlowBlocks(int BlockIndex, ref List<U8CodeBlock> CurrentSub, ref int Depth)
+        private int GetFlowBlocks(int BlockIndex, ref List<U8CodeBlock> CurrentSub, ref int Depth)
         {
+            if (BlockIndex > this.Blocks.Count || BlockIndex == -1)
+                return -1; // err
+
             // TOOD: Cleanup
             // check if already in CurrentSub (meaning we merging back to normal flow)
             bool isDuplicate = false;
@@ -229,34 +248,39 @@ namespace U8Disasm.Analyser
                 // abort and remove in case of over 2000 instructions in one block?
                 CurrentSub.RemoveAt(CurrentSub.Count - 1); // dont kill the RAM ;)
                 //depth--;
-                return; 
+                return -1; 
             }
 
             // do jump block
-            if (this.Blocks[BlockIndex].NextBlock != -1) // do normal blocks
+            if (this.Blocks[BlockIndex].NextBlock != -1 && this.Blocks[BlockIndex].JumpsToBlock != -1) // do red line
             {
                 // checkout the next block below
                 int bIndex = FindBlockIndex(this.Blocks[BlockIndex].NextBlock);
-                if (bIndex != -1 && Depth < 60)
+                if (bIndex != -1 && Depth < 90)
                 {
                     // existing block found - do not visit again?
                     GetFlowBlocks(bIndex, ref CurrentSub, ref Depth);
+                    //Depth--;
                 }
             }
-            if (this.Blocks[BlockIndex].JumpsToBlock != -1) // then do jumps
+            if (this.Blocks[BlockIndex].JumpsToBlock != -1) // do green line
             {
                 // checkout the jumpeto block
                 int bIndex = FindBlockIndex(this.Blocks[BlockIndex].JumpsToBlock);
-                if (bIndex != -1 && Depth < 60)
+                if (bIndex != -1 && Depth < 90)
                 {
                     // existing block found - do not visit again?
                     GetFlowBlocks(bIndex, ref CurrentSub, ref Depth);
+                    //Depth--;
                 }
             }
+
             
 
-            Depth--;
-            return;
+            if (this.Blocks[BlockIndex].NextBlock != -1 && this.Blocks[BlockIndex].JumpsToBlock == -1)
+                return this.Blocks[BlockIndex].NextBlock; // return blue line
+
+            return -1; // end of blocks
         }
 
         private bool IsAlreadyDiscovered(int Address)
